@@ -1,16 +1,1414 @@
 // ==UserScript==
 // @name         千川素材请求采集
 // @namespace    VideoCollection
-// @version      1.4.0
-// @description  采集千川素材与抖店自营视频，按页面指标排序筛选后导出 CSV。
+// @version      1.6.0
+// @description  采集千川素材与抖店自营视频，支持单页 CSV 与双页 Excel 汇总导出。
 //
 // @match        https://qianchuan.jinritemai.com/dataV3/roi2-material-analysis*
 // @match        https://compass.jinritemai.com/shop/video/self*
+// @require      https://cdn.jsdelivr.net/npm/vue@3.5.46/dist/vue.global.prod.js#sha256-wuS4iOy7EseyT9Xov2VIPOqrc8N7eUAveWgCOXftPoE=
+// @require      data:text/javascript;base64,Y29uc3QgX192Y0dsb2JhbCA9IGdsb2JhbFRoaXM7IGNvbnN0IF9fdmNQYWdlR2xvYmFsID0gdHlwZW9mIHVuc2FmZVdpbmRvdyA9PT0gJ29iamVjdCcgPyB1bnNhZmVXaW5kb3cgOiBfX3ZjR2xvYmFsOyBjb25zdCBfX3ZjSGFkVnVlID0gT2JqZWN0Lmhhc093bihfX3ZjR2xvYmFsLCAnVnVlJyk7IGNvbnN0IF9fdmNPbGRWdWUgPSBfX3ZjR2xvYmFsLlZ1ZTsgY29uc3QgX192Y0hhZEVsZW1lbnRQbHVzID0gT2JqZWN0Lmhhc093bihfX3ZjR2xvYmFsLCAnRWxlbWVudFBsdXMnKTsgY29uc3QgX192Y09sZEVsZW1lbnRQbHVzID0gX192Y0dsb2JhbC5FbGVtZW50UGx1czsgY29uc3QgX192Y0hhZFBhZ2VWdWUgPSBPYmplY3QuaGFzT3duKF9fdmNQYWdlR2xvYmFsLCAnVnVlJyk7IGNvbnN0IF9fdmNPbGRQYWdlVnVlID0gX192Y1BhZ2VHbG9iYWwuVnVlOyBjb25zdCBfX3ZjSGFkUGFnZUVsZW1lbnRQbHVzID0gT2JqZWN0Lmhhc093bihfX3ZjUGFnZUdsb2JhbCwgJ0VsZW1lbnRQbHVzJyk7IGNvbnN0IF9fdmNPbGRQYWdlRWxlbWVudFBsdXMgPSBfX3ZjUGFnZUdsb2JhbC5FbGVtZW50UGx1czsgX192Y0dsb2JhbC5WdWUgPSBWdWU7IF9fdmNQYWdlR2xvYmFsLlZ1ZSA9IFZ1ZTs=
+// @require      https://cdn.jsdelivr.net/npm/element-plus@2.14.8/dist/index.full.min.js#sha256-D/7wpbpse4CCbLyQwzY2KGIjP5bvtkEHnzgXXJyOebI=
+// @require      data:text/javascript;base64,Y29uc3QgRWxlbWVudFBsdXMgPSBfX3ZjR2xvYmFsLkVsZW1lbnRQbHVzOyBfX3ZjUGFnZUdsb2JhbC5FbGVtZW50UGx1cyA9IEVsZW1lbnRQbHVzOyBjb25zdCBfX3ZjUmVzdG9yZUZyYW1ld29ya0dsb2JhbHMgPSAoKSA9PiB7IGlmIChfX3ZjSGFkVnVlKSBfX3ZjR2xvYmFsLlZ1ZSA9IF9fdmNPbGRWdWU7IGVsc2UgZGVsZXRlIF9fdmNHbG9iYWwuVnVlOyBpZiAoX192Y0hhZEVsZW1lbnRQbHVzKSBfX3ZjR2xvYmFsLkVsZW1lbnRQbHVzID0gX192Y09sZEVsZW1lbnRQbHVzOyBlbHNlIGRlbGV0ZSBfX3ZjR2xvYmFsLkVsZW1lbnRQbHVzOyBpZiAoX192Y0hhZFBhZ2VWdWUpIF9fdmNQYWdlR2xvYmFsLlZ1ZSA9IF9fdmNPbGRQYWdlVnVlOyBlbHNlIGRlbGV0ZSBfX3ZjUGFnZUdsb2JhbC5WdWU7IGlmIChfX3ZjSGFkUGFnZUVsZW1lbnRQbHVzKSBfX3ZjUGFnZUdsb2JhbC5FbGVtZW50UGx1cyA9IF9fdmNPbGRQYWdlRWxlbWVudFBsdXM7IGVsc2UgZGVsZXRlIF9fdmNQYWdlR2xvYmFsLkVsZW1lbnRQbHVzOyB9Ow==
+// @require      data:text/javascript;base64,Y29uc3QgX192Y1NoZWV0UGFnZUdsb2JhbCA9IHR5cGVvZiB1bnNhZmVXaW5kb3cgPT09ICdvYmplY3QnID8gdW5zYWZlV2luZG93IDogbnVsbDsgY29uc3QgX192Y0hhZFBhZ2VYbHN4ID0gISFfX3ZjU2hlZXRQYWdlR2xvYmFsICYmIE9iamVjdC5oYXNPd24oX192Y1NoZWV0UGFnZUdsb2JhbCwgJ1hMU1gnKTsgY29uc3QgX192Y09sZFBhZ2VYbHN4ID0gX192Y1NoZWV0UGFnZUdsb2JhbD8uWExTWDs=
+// @require      https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.mini.min.js#sha256-DLNT+DDXKIOFSSyD0newWN3qxmTKUc8Tk6of0+K3CTk=
+// @require      data:text/javascript;base64,aWYgKF9fdmNTaGVldFBhZ2VHbG9iYWwpIHsgaWYgKF9fdmNIYWRQYWdlWGxzeCkgX192Y1NoZWV0UGFnZUdsb2JhbC5YTFNYID0gX192Y09sZFBhZ2VYbHN4OyBlbHNlIGRlbGV0ZSBfX3ZjU2hlZXRQYWdlR2xvYmFsLlhMU1g7IH0=
+// @resource     ELEMENT_PLUS_CSS https://cdn.jsdelivr.net/npm/element-plus@2.14.8/dist/index.css#sha256-9vVHqUarXedNRDZ6BVb0lN1jDGdZmtT2amrCAKhegKY=
+// @resource     ELEMENT_PLUS_DARK_CSS https://cdn.jsdelivr.net/npm/element-plus@2.14.8/theme-chalk/dark/css-vars.css#sha256-KOclPpHatx0lmXDXwrIWdM7/op+kRvWWikCTMhUWFgA=
 // @run-at       document-start
 // @sandbox      raw
 // @noframes
 // @grant        GM_registerMenuCommand
+// @grant        GM_getResourceText
+// @grant        GM_getValue
+// @grant        GM_setValue
+// @grant        GM_deleteValue
+// @grant        GM_addValueChangeListener
+// @grant        GM_removeValueChangeListener
+// @grant        unsafeWindow
 // ==/UserScript==
+
+const videoCollectionWorkbook = (() => {
+  'use strict';
+
+  const schemaVersion = 1;
+  const storageKeys = Object.freeze({
+    qianchuan: 'video-collection:qianchuan:v1',
+    compass: 'video-collection:compass:v1',
+  });
+  const labels = Object.freeze({ qianchuan: '千川素材', compass: '自营视频' });
+  const countFormat = new Intl.NumberFormat('zh-CN');
+  const maxPairAgeMs = 24 * 60 * 60 * 1000;
+
+  function isDate(value) {
+    const text = String(value);
+    return /^\d{4}-\d{2}-\d{2}$/.test(text)
+      && new Date(`${text}T00:00:00Z`).toJSON()?.slice(0, 10) === text;
+  }
+
+  function validRow(source, row) {
+    if (!row || typeof row !== 'object') return false;
+    if (source === 'qianchuan') {
+      return typeof row.promotionType === 'string' && typeof row.materialId === 'string'
+        && typeof row.title === 'string' && Number.isFinite(row.spendYuan) && row.spendYuan >= 0
+        && Number.isSafeInteger(row.impressions) && row.impressions >= 0;
+    }
+    return source === 'compass' && typeof row.title === 'string'
+      && Number.isSafeInteger(row.watchCount) && row.watchCount >= 0;
+  }
+
+  function canonicalRows(source, rows) {
+    if (!Array.isArray(rows)) return null;
+    const safeRows = rows.map((row) => source === 'qianchuan' ? {
+      promotionType: row?.promotionType,
+      materialId: row?.materialId,
+      title: row?.title,
+      spendYuan: row?.spendYuan,
+      impressions: row?.impressions,
+    } : {
+      title: row?.title,
+      watchCount: row?.watchCount,
+    });
+    return safeRows.every((row) => validRow(source, row)) ? safeRows : null;
+  }
+
+  function scopeFingerprint(value) {
+    let hash = 2166136261;
+    for (const character of String(value)) {
+      hash ^= character.codePointAt(0);
+      hash = Math.imul(hash, 16777619);
+    }
+    return `v1:${(hash >>> 0).toString(36)}`;
+  }
+
+  function normalizeSnapshot(source, value) {
+    if (!value || value.schemaVersion !== schemaVersion || value.source !== source
+      || value.complete !== true || !isDate(value.startDate) || !isDate(value.endDate)
+      || value.startDate > value.endDate || !/^v1:[a-z0-9]+$/.test(value.scope)
+      || !Number.isFinite(Date.parse(value.collectedAt))
+      || !Number.isSafeInteger(value.scanned) || value.scanned < 0
+      || !Array.isArray(value.rows) || !value.rows.every((row) => validRow(source, row))) {
+      return null;
+    }
+    return value;
+  }
+
+  function read(source) {
+    const key = storageKeys[source];
+    if (!key || typeof GM_getValue !== 'function') return null;
+    try {
+      const stored = GM_getValue(key, '');
+      const value = typeof stored === 'string' ? JSON.parse(stored || 'null') : stored;
+      return normalizeSnapshot(source, value);
+    } catch {
+      return null;
+    }
+  }
+
+  function invalidate(source) {
+    const key = storageKeys[source];
+    if (!key || typeof GM_deleteValue !== 'function') return false;
+    try {
+      GM_deleteValue(key);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  function begin(source, scope, period) {
+    if (!storageKeys[source] || typeof scope !== 'string' || !scope
+      || !isDate(period?.startDate) || !isDate(period?.endDate)) return false;
+    const otherSource = source === 'qianchuan' ? 'compass' : 'qianchuan';
+    const current = read(source);
+    const other = read(otherSource);
+    const scopeChanged = current && current.scope !== scopeFingerprint(scope);
+    const periodChanged = other && (other.startDate !== period.startDate || other.endDate !== period.endDate);
+    if (scopeChanged || periodChanged || summary().ready) invalidate(otherSource);
+    invalidate(source);
+    return true;
+  }
+
+  function save(source, snapshot) {
+    const key = storageKeys[source];
+    const rows = canonicalRows(source, snapshot?.rows);
+    if (!key || typeof GM_setValue !== 'function' || !snapshot
+      || typeof snapshot.scope !== 'string' || !snapshot.scope || !rows) {
+      invalidate(source);
+      return false;
+    }
+    try {
+      const value = {
+        schemaVersion,
+        source,
+        complete: true,
+        scope: scopeFingerprint(snapshot.scope),
+        startDate: snapshot.startDate,
+        endDate: snapshot.endDate,
+        collectedAt: new Date().toISOString(),
+        scanned: Number.isSafeInteger(snapshot.scanned) && snapshot.scanned >= 0
+          ? snapshot.scanned : rows.length,
+        rows,
+      };
+      if (!normalizeSnapshot(source, value)) {
+        invalidate(source);
+        return false;
+      }
+      GM_setValue(key, JSON.stringify(value));
+      return true;
+    } catch {
+      invalidate(source);
+      return false;
+    }
+  }
+
+  function periodText(snapshot) {
+    return `${snapshot.startDate} 至 ${snapshot.endDate}`;
+  }
+
+  function statusItem(source, snapshot) {
+    return snapshot ? {
+      key: source,
+      label: labels[source],
+      state: 'done',
+      text: `已采集 ${countFormat.format(snapshot.rows.length)} 条 ${periodText(snapshot)}`,
+    } : {
+      key: source,
+      label: labels[source],
+      state: 'waiting',
+      text: '未采集',
+    };
+  }
+
+  function summary() {
+    const qianchuan = read('qianchuan');
+    const compass = read('compass');
+    const complete = Boolean(qianchuan && compass);
+    const samePeriod = complete && qianchuan.startDate === compass.startDate
+      && qianchuan.endDate === compass.endDate;
+    const closeInTime = complete && Math.abs(
+      Date.parse(qianchuan.collectedAt) - Date.parse(compass.collectedAt),
+    ) <= maxPairAgeMs;
+    const ready = complete && samePeriod && closeInTime;
+    let message = '两个页面采集完成后可下载总 Excel。';
+    if (complete && !samePeriod) message = '两个页面的采集日期不一致，请用相同日期重新采集。';
+    else if (complete && !closeInTime) message = '两个页面的采集时间相隔超过 24 小时，请重新采集。';
+    else if (ready) message = '两个页面已采集，请确认属于同一店铺后下载总 Excel。';
+    return {
+      qianchuan,
+      compass,
+      ready,
+      samePeriod,
+      message,
+      period: ready ? { startDate: qianchuan.startDate, endDate: qianchuan.endDate } : null,
+      items: [statusItem('qianchuan', qianchuan), statusItem('compass', compass)],
+    };
+  }
+
+  function setNumberFormat(sheet, column, rowCount, format) {
+    for (let row = 1; row <= rowCount; row++) {
+      const address = XLSX.utils.encode_cell({ r: row, c: column });
+      if (sheet[address]) sheet[address].z = format;
+    }
+  }
+
+  function buildWorkbook(state = summary()) {
+    if (!state.ready) throw new Error(state.message);
+    if (typeof XLSX === 'undefined' || !XLSX?.utils) {
+      throw new Error('Excel 组件未加载，请刷新页面后重试。');
+    }
+
+    const qianchuanRows = [
+      ['推广类型', '素材 ID', '素材名称', '消耗（元）', '展现（次）'],
+      ...state.qianchuan.rows.map((row) => [
+        row.promotionType,
+        row.materialId,
+        row.title,
+        row.spendYuan,
+        row.impressions,
+      ]),
+    ];
+    const compassRows = [
+      ['标题', '观看次数'],
+      ...state.compass.rows.map((row) => [row.title, row.watchCount]),
+    ];
+    const workbook = XLSX.utils.book_new();
+    const qianchuanSheet = XLSX.utils.aoa_to_sheet(qianchuanRows);
+    qianchuanSheet['!cols'] = [
+      { wch: 12 }, { wch: 22 }, { wch: 48 }, { wch: 16 }, { wch: 16 },
+    ];
+    qianchuanSheet['!autofilter'] = { ref: qianchuanSheet['!ref'] || 'A1:E1' };
+    setNumberFormat(qianchuanSheet, 3, state.qianchuan.rows.length, '#,##0.00');
+    setNumberFormat(qianchuanSheet, 4, state.qianchuan.rows.length, '#,##0');
+    XLSX.utils.book_append_sheet(workbook, qianchuanSheet, '千川素材');
+
+    const compassSheet = XLSX.utils.aoa_to_sheet(compassRows);
+    compassSheet['!cols'] = [{ wch: 58 }, { wch: 18 }];
+    compassSheet['!autofilter'] = { ref: compassSheet['!ref'] || 'A1:B1' };
+    setNumberFormat(compassSheet, 1, state.compass.rows.length, '#,##0');
+    XLSX.utils.book_append_sheet(workbook, compassSheet, '自营视频');
+    return workbook;
+  }
+
+  function downloadCombined() {
+    const state = summary();
+    const workbook = buildWorkbook(state);
+    const filename = `video-collection-summary-${state.period.startDate}_${state.period.endDate}.xlsx`;
+    XLSX.writeFileXLSX(workbook, filename, { compression: true });
+    return filename;
+  }
+
+  function subscribe(callback) {
+    if (typeof GM_addValueChangeListener !== 'function') return [];
+    const listeners = [];
+    for (const key of Object.values(storageKeys)) {
+      try {
+        listeners.push(GM_addValueChangeListener(key, callback));
+      } catch {
+        // Cross-tab status updates are optional when the manager does not support listeners.
+      }
+    }
+    return listeners;
+  }
+
+  function unsubscribe(listeners) {
+    if (typeof GM_removeValueChangeListener !== 'function') return;
+    for (const listener of listeners ?? []) {
+      try {
+        GM_removeValueChangeListener(listener);
+      } catch {
+        // The listener may already have been removed by the userscript manager.
+      }
+    }
+  }
+
+  return {
+    begin, buildWorkbook, downloadCombined, invalidate, read, save, storageKeys,
+    subscribe, summary, unsubscribe,
+  };
+})();
+
+const videoCollectionLiquidUi = (() => {
+  'use strict';
+
+  const themeKey = 'video-collection-liquid-theme';
+  const positionKeyPrefix = 'video-collection-liquid-position';
+  const edgeGap = 12;
+  const snapDistance = 36;
+  const liquidCss = `
+    :host {
+      font-family: "SF Pro Text", "SF Pro Display", "Segoe UI Variable", "PingFang SC",
+        "Microsoft YaHei", sans-serif;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+
+    .vc-shell {
+      --vc-accent: #087cff;
+      --vc-accent-strong: #0067df;
+      --vc-accent-soft: rgb(8 124 255 / 13%);
+      --vc-glass: rgb(246 250 255 / 76%);
+      --vc-glass-strong: rgb(255 255 255 / 88%);
+      --vc-standard: rgb(255 255 255 / 72%);
+      --vc-control: rgb(255 255 255 / 58%);
+      --vc-control-hover: rgb(255 255 255 / 82%);
+      --vc-border: rgb(255 255 255 / 76%);
+      --vc-border-soft: rgb(83 111 145 / 16%);
+      --vc-text: #182235;
+      --vc-muted: #5c6c82;
+      --vc-warning: #8a5600;
+      --vc-warning-bg: rgb(255 246 218 / 78%);
+      --vc-shadow: 0 28px 80px rgb(25 48 78 / 24%), 0 2px 12px rgb(28 55 90 / 12%);
+      --vc-inner-highlight: inset 0 1px 0 rgb(255 255 255 / 90%);
+      --el-color-primary: var(--vc-accent);
+      --el-color-primary-dark-2: var(--vc-accent-strong);
+      --el-text-color-primary: var(--vc-text);
+      --el-text-color-regular: var(--vc-text);
+      --el-text-color-secondary: var(--vc-muted);
+      --el-border-color: var(--vc-border-soft);
+      --el-border-color-light: var(--vc-border-soft);
+      --el-border-color-lighter: rgb(83 111 145 / 10%);
+      --el-fill-color-blank: transparent;
+      --el-fill-color-light: rgb(255 255 255 / 44%);
+      --el-bg-color: var(--vc-standard);
+      --el-bg-color-overlay: var(--vc-glass-strong);
+      color: var(--vc-text);
+      color-scheme: light;
+      font-family: inherit;
+    }
+
+    .vc-shell.dark {
+      --vc-accent: #58a8ff;
+      --vc-accent-strong: #84beff;
+      --vc-accent-soft: rgb(88 168 255 / 18%);
+      --vc-glass: rgb(17 24 34 / 79%);
+      --vc-glass-strong: rgb(26 35 48 / 92%);
+      --vc-standard: rgb(24 33 46 / 84%);
+      --vc-control: rgb(255 255 255 / 9%);
+      --vc-control-hover: rgb(255 255 255 / 15%);
+      --vc-border: rgb(255 255 255 / 18%);
+      --vc-border-soft: rgb(255 255 255 / 11%);
+      --vc-text: #f4f8ff;
+      --vc-muted: #aab8ca;
+      --vc-warning: #ffd58a;
+      --vc-warning-bg: rgb(92 62 18 / 64%);
+      --vc-shadow: 0 30px 90px rgb(0 0 0 / 52%), 0 2px 14px rgb(0 0 0 / 35%);
+      --vc-inner-highlight: inset 0 1px 0 rgb(255 255 255 / 20%);
+      color-scheme: dark;
+    }
+
+    .vc-launcher,
+    .vc-panel {
+      position: fixed;
+      z-index: 2147483600;
+      inset-inline-end: 20px;
+      inset-block-end: 20px;
+    }
+
+    .vc-shell .vc-launcher.el-button {
+      min-height: 48px;
+      padding: 0 18px;
+      color: var(--vc-text);
+      background:
+        linear-gradient(132deg, rgb(255 255 255 / 58%), transparent 42%),
+        var(--vc-glass);
+      border: 1px solid var(--vc-border);
+      border-radius: 999px;
+      box-shadow: var(--vc-shadow), var(--vc-inner-highlight);
+      backdrop-filter: blur(28px) saturate(175%);
+      -webkit-backdrop-filter: blur(28px) saturate(175%);
+      font-weight: 700;
+      letter-spacing: .01em;
+      overflow: hidden;
+      cursor: grab;
+      touch-action: none;
+      transition: transform 220ms ease, box-shadow 220ms ease, background 220ms ease;
+    }
+
+    .vc-shell .vc-launcher.el-button:hover {
+      color: var(--vc-text);
+      background:
+        linear-gradient(132deg, rgb(255 255 255 / 68%), transparent 42%),
+        var(--vc-glass-strong);
+      transform: translateY(-2px);
+    }
+
+    .vc-panel {
+      width: min(520px, calc(100vw - 40px));
+      max-height: min(720px, calc(100dvh - 40px));
+      overflow: hidden;
+      isolation: isolate;
+      background:
+        linear-gradient(145deg, rgb(255 255 255 / 45%), transparent 36%),
+        var(--vc-glass);
+      border: 1px solid var(--vc-border);
+      border-radius: 28px;
+      box-shadow: var(--vc-shadow), var(--vc-inner-highlight);
+      backdrop-filter: blur(38px) saturate(185%);
+      -webkit-backdrop-filter: blur(38px) saturate(185%);
+    }
+
+    .vc-panel::before {
+      position: absolute;
+      z-index: -1;
+      inset: 0;
+      border: 1px solid rgb(255 255 255 / 20%);
+      border-radius: inherit;
+      box-shadow: inset 0 -1px 0 rgb(255 255 255 / 18%);
+      content: "";
+      pointer-events: none;
+    }
+
+    .vc-refraction {
+      position: absolute;
+      z-index: -2;
+      inset: -30% -20% auto auto;
+      width: 330px;
+      aspect-ratio: 1;
+      background:
+        radial-gradient(circle at 32% 36%, rgb(255 212 104 / 28%), transparent 36%),
+        radial-gradient(circle at 66% 58%, rgb(58 166 255 / 28%), transparent 46%);
+      filter: blur(14px);
+      opacity: .75;
+      pointer-events: none;
+      transform: rotate(-14deg);
+    }
+
+    .dark .vc-refraction {
+      background:
+        radial-gradient(circle at 32% 36%, rgb(70 157 255 / 24%), transparent 38%),
+        radial-gradient(circle at 65% 58%, rgb(52 229 201 / 13%), transparent 46%);
+      opacity: .58;
+    }
+
+    .vc-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 15px 16px 13px 20px;
+      border-bottom: 1px solid var(--vc-border-soft);
+      cursor: grab;
+      touch-action: none;
+      user-select: none;
+    }
+
+    .vc-launcher.is-dragging,
+    .vc-launcher.is-dragging:hover,
+    .vc-panel.is-dragging {
+      cursor: grabbing;
+      transform: none;
+      transition: none;
+    }
+
+    .vc-panel.is-dragging .vc-header { cursor: grabbing; }
+
+    .vc-title-wrap {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .vc-title-mark {
+      width: 9px;
+      height: 30px;
+      background: linear-gradient(#79c4ff, var(--vc-accent));
+      border-radius: 999px;
+      box-shadow: 0 0 18px rgb(8 124 255 / 38%);
+    }
+
+    .vc-header h2 {
+      margin: 0;
+      overflow: hidden;
+      font-size: 17px;
+      font-weight: 760;
+      letter-spacing: -.02em;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .vc-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .vc-shell .el-segmented {
+      --el-segmented-bg-color: var(--vc-control);
+      --el-segmented-item-selected-bg-color: var(--vc-glass-strong);
+      --el-segmented-item-selected-color: var(--vc-text);
+      --el-border-radius-base: 999px;
+      padding: 3px;
+      border: 1px solid var(--vc-border-soft);
+      border-radius: 999px;
+      box-shadow: var(--vc-inner-highlight);
+    }
+
+    .vc-shell .el-segmented__item {
+      min-width: 48px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .vc-shell .vc-close.el-button {
+      width: 32px;
+      height: 32px;
+      color: var(--vc-muted);
+      background: var(--vc-control);
+      border: 1px solid var(--vc-border-soft);
+      font-size: 20px;
+      font-weight: 400;
+    }
+
+    .vc-panel-body {
+      display: grid;
+      gap: 12px;
+      max-height: calc(min(720px, 100dvh - 40px) - 62px);
+      padding: 14px 18px 18px;
+      overflow: auto;
+      overscroll-behavior: contain;
+      scrollbar-color: var(--vc-border-soft) transparent;
+    }
+
+    .vc-period-card,
+    .vc-content-card {
+      background: var(--vc-standard);
+      border: 1px solid var(--vc-border-soft);
+      border-radius: 20px;
+      box-shadow: var(--vc-inner-highlight);
+    }
+
+    .vc-period-card { padding: 14px; }
+
+    .vc-period-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .vc-section-label {
+      display: block;
+      margin-bottom: 2px;
+      color: var(--vc-muted);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .vc-period-value {
+      color: var(--vc-text);
+      font-size: 14px;
+      font-variant-numeric: tabular-nums;
+      font-weight: 720;
+    }
+
+    .vc-shell .el-button {
+      --el-button-text-color: var(--vc-text);
+      --el-button-bg-color: var(--vc-control);
+      --el-button-border-color: var(--vc-border-soft);
+      --el-button-hover-text-color: var(--vc-text);
+      --el-button-hover-bg-color: var(--vc-control-hover);
+      --el-button-hover-border-color: var(--vc-border);
+      min-height: 36px;
+      border-radius: 14px;
+      font-weight: 650;
+      transition: transform 180ms ease, background 180ms ease, opacity 180ms ease;
+    }
+
+    .vc-shell .el-button:not(.is-disabled):active { transform: scale(.97); }
+
+    .vc-shell .el-button--primary {
+      --el-button-text-color: #fff;
+      --el-button-bg-color: var(--vc-accent);
+      --el-button-border-color: rgb(255 255 255 / 26%);
+      --el-button-hover-text-color: #fff;
+      --el-button-hover-bg-color: var(--vc-accent-strong);
+      --el-button-hover-border-color: rgb(255 255 255 / 38%);
+      box-shadow: inset 0 1px 0 rgb(255 255 255 / 38%), 0 8px 20px rgb(8 124 255 / 24%);
+    }
+
+    .vc-date-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .vc-date-field {
+      display: grid;
+      gap: 5px;
+      min-width: 0;
+      color: var(--vc-muted);
+      font-size: 12px;
+      font-weight: 650;
+    }
+
+    .vc-date-input {
+      width: 100%;
+      min-width: 0;
+      height: 38px;
+      padding: 0 10px;
+      color: var(--vc-text);
+      background: var(--vc-control);
+      border: 1px solid var(--vc-border-soft);
+      border-radius: 13px;
+      box-shadow: var(--vc-inner-highlight);
+      font: inherit;
+      font-variant-numeric: tabular-nums;
+      outline: none;
+    }
+
+    .vc-date-input:focus {
+      border-color: var(--vc-accent);
+      box-shadow: 0 0 0 3px var(--vc-accent-soft), var(--vc-inner-highlight);
+    }
+
+    .vc-date-input:disabled { opacity: .56; }
+    .dark .vc-date-input::-webkit-calendar-picker-indicator { filter: invert(1); }
+
+    .vc-scope-note {
+      padding: 10px 12px;
+      color: var(--vc-warning);
+      background: var(--vc-warning-bg);
+      border: 1px solid rgb(222 163 53 / 22%);
+      border-radius: 15px;
+      overflow-wrap: anywhere;
+    }
+
+    .vc-progress-grid { display: grid; gap: 7px; }
+
+    .vc-progress-card {
+      display: grid;
+      grid-template-columns: 9px 1fr;
+      align-items: start;
+      gap: 9px;
+      min-height: 38px;
+      padding: 9px 11px;
+      background: var(--vc-control);
+      border: 1px solid var(--vc-border-soft);
+      border-radius: 14px;
+      font-variant-numeric: tabular-nums;
+      overflow-wrap: anywhere;
+    }
+
+    .vc-state-dot {
+      width: 8px;
+      height: 8px;
+      margin-top: 5px;
+      background: #9aa7b8;
+      border-radius: 50%;
+      box-shadow: 0 0 0 4px rgb(154 167 184 / 12%);
+    }
+
+    [data-state="ready"] .vc-state-dot { background: #34c759; box-shadow: 0 0 0 4px rgb(52 199 89 / 13%); }
+    [data-state="active"] .vc-state-dot { background: var(--vc-accent); box-shadow: 0 0 0 4px var(--vc-accent-soft); animation: vc-pulse 1.45s ease-in-out infinite; }
+    [data-state="done"] .vc-state-dot { background: #30d6c4; box-shadow: 0 0 0 4px rgb(48 214 196 / 13%); }
+
+    .vc-workbook-card {
+      display: grid;
+      gap: 9px;
+      padding: 12px;
+      background: var(--vc-standard);
+      border: 1px solid var(--vc-border-soft);
+      border-radius: 18px;
+      box-shadow: var(--vc-inner-highlight);
+    }
+
+    .vc-workbook-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 7px;
+    }
+
+    .vc-workbook-item {
+      display: grid;
+      grid-template-columns: 9px minmax(0, 1fr);
+      align-items: start;
+      gap: 9px;
+      min-width: 0;
+      padding: 9px 10px;
+      background: var(--vc-control);
+      border: 1px solid var(--vc-border-soft);
+      border-radius: 14px;
+    }
+
+    .vc-workbook-copy { display: grid; gap: 2px; min-width: 0; }
+    .vc-workbook-copy strong { font-size: 12px; font-weight: 740; }
+    .vc-workbook-copy small {
+      color: var(--vc-muted);
+      font-size: 11px;
+      font-variant-numeric: tabular-nums;
+      line-height: 1.4;
+      overflow-wrap: anywhere;
+    }
+
+    .vc-workbook-status {
+      margin: 0;
+      color: var(--vc-muted);
+      font-size: 12px;
+      overflow-wrap: anywhere;
+    }
+
+    .vc-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .vc-status {
+      min-height: 0;
+      margin: 0;
+      color: var(--vc-muted);
+      overflow-wrap: anywhere;
+    }
+
+    .vc-status:empty { display: none; }
+
+    .vc-content-card {
+      display: grid;
+      gap: 10px;
+      padding: 13px;
+    }
+
+    .vc-summary {
+      display: grid;
+      gap: 8px;
+    }
+
+    .vc-filter-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .vc-shell .el-tag {
+      --el-tag-bg-color: var(--vc-control);
+      --el-tag-border-color: var(--vc-border-soft);
+      --el-tag-text-color: var(--vc-muted);
+      border-radius: 999px;
+    }
+
+    .vc-count {
+      margin: 0;
+      color: var(--vc-text);
+      font-size: 15px;
+      font-variant-numeric: tabular-nums;
+      font-weight: 760;
+      letter-spacing: -.01em;
+    }
+
+    .vc-table-scroll {
+      max-height: 250px;
+      overflow: auto;
+      background: transparent;
+      border: 1px solid var(--vc-border-soft);
+      border-radius: 14px;
+    }
+
+    .vc-result-table {
+      width: 100%;
+      color: var(--vc-text);
+      background: transparent;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 13px;
+    }
+
+    .vc-result-table th,
+    .vc-result-table td {
+      padding: 9px 11px;
+      border-bottom: 1px solid var(--vc-border-soft);
+      line-height: 1.45;
+      text-align: left;
+      vertical-align: top;
+      overflow-wrap: anywhere;
+    }
+
+    .vc-result-table th {
+      position: sticky;
+      z-index: 1;
+      top: 0;
+      color: var(--vc-muted);
+      background: var(--vc-control);
+      font-size: 12px;
+      font-weight: 720;
+    }
+
+    .vc-result-table tbody tr:last-child td { border-bottom: 0; }
+    .vc-result-table tbody tr:hover td { background: var(--vc-accent-soft); }
+    .vc-result-table .vc-number { text-align: right; }
+    .vc-number { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+    .vc-panel-enter-active,
+    .vc-panel-leave-active { transition: opacity 200ms ease, transform 240ms cubic-bezier(.2, .8, .2, 1); }
+    .vc-panel-enter-from,
+    .vc-panel-leave-to { opacity: 0; transform: translateY(12px) scale(.975); }
+    .vc-launcher-enter-active,
+    .vc-launcher-leave-active { transition: opacity 160ms ease, transform 180ms ease; }
+    .vc-launcher-enter-from,
+    .vc-launcher-leave-to { opacity: 0; transform: translateY(6px) scale(.94); }
+
+    @keyframes vc-pulse {
+      0%, 100% { transform: scale(.9); opacity: .72; }
+      50% { transform: scale(1.08); opacity: 1; }
+    }
+
+    @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+      .vc-panel, .vc-shell .vc-launcher.el-button { background: var(--vc-glass-strong); }
+    }
+
+    @media (max-width: 560px) {
+      .vc-launcher, .vc-panel { inset-inline-end: 12px; inset-block-end: 12px; }
+      .vc-panel { width: calc(100vw - 24px); max-height: calc(100dvh - 24px); border-radius: 24px; }
+      .vc-panel-body { max-height: calc(100dvh - 86px); padding-inline: 13px; }
+      .vc-header { padding-inline: 15px 11px; }
+      .vc-workbook-grid { grid-template-columns: 1fr; }
+      .vc-shell .el-segmented__item { min-width: 42px; }
+      .vc-result-table { table-layout: auto; font-size: 12px; }
+      .vc-result-table col { width: auto !important; min-width: 0 !important; }
+      .vc-result-table th, .vc-result-table td { padding-inline: 8px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .vc-shell *, .vc-shell *::before, .vc-shell *::after {
+        scroll-behavior: auto !important;
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+      }
+    }
+  `;
+
+  const template = `
+    <div class="vc-shell" :class="{ dark: theme === 'dark' }" :data-theme="theme" @keydown.esc="closePanel">
+      <transition name="vc-launcher">
+        <el-button
+          v-show="!panelOpen"
+          ref="launcher"
+          class="vc-launcher"
+          :class="{ 'is-dragging': dragKind === 'launcher' }"
+          :style="floatingStyle('launcher')"
+          round
+          :aria-expanded="String(panelOpen)"
+          @pointerdown="startDrag('launcher', $event)"
+          @click="openPanel"
+        >
+          {{ config.launcherLabel }}
+        </el-button>
+      </transition>
+
+      <transition name="vc-panel">
+        <section
+          v-show="panelOpen"
+          ref="panel"
+          class="vc-panel"
+          :class="{ 'is-dragging': dragKind === 'panel' }"
+          :style="floatingStyle('panel')"
+          role="dialog"
+          aria-modal="false"
+          :aria-label="config.title"
+        >
+          <div class="vc-refraction" aria-hidden="true"></div>
+          <header class="vc-header" @pointerdown="startDrag('panel', $event)">
+            <div class="vc-title-wrap">
+              <span class="vc-title-mark" aria-hidden="true"></span>
+              <h2>{{ config.title }}</h2>
+            </div>
+            <div class="vc-header-actions">
+              <el-segmented
+                v-model="theme"
+                :options="themeOptions"
+                size="small"
+                aria-label="主题"
+                @change="saveTheme"
+              ></el-segmented>
+              <el-button
+                ref="closeButton"
+                class="vc-close"
+                circle
+                text
+                aria-label="关闭面板"
+                @click="closePanel"
+              >×</el-button>
+            </div>
+          </header>
+
+          <div class="vc-panel-body">
+            <section class="vc-period-card">
+              <div class="vc-period-head">
+                <div>
+                  <span class="vc-section-label">{{ view.periodLabel }}</span>
+                  <strong class="vc-period-value">{{ view.periodText }}</strong>
+                </div>
+                <el-button :disabled="view.running" @click="useMonth">本月</el-button>
+              </div>
+              <div class="vc-date-grid">
+                <label class="vc-date-field">
+                  开始日期
+                  <input
+                    v-model="dateStart"
+                    class="vc-date-input"
+                    type="date"
+                    required
+                    :disabled="view.running"
+                    @change="applyDates"
+                  >
+                </label>
+                <label class="vc-date-field">
+                  结束日期
+                  <input
+                    v-model="dateEnd"
+                    class="vc-date-input"
+                    type="date"
+                    required
+                    :disabled="view.running"
+                    @change="applyDates"
+                  >
+                </label>
+              </div>
+            </section>
+
+            <div v-if="view.scopeNote" class="vc-scope-note" role="status">{{ view.scopeNote }}</div>
+
+            <div class="vc-progress-grid">
+              <div
+                v-for="item in view.progress"
+                :key="item.key"
+                class="vc-progress-card"
+                :data-state="item.state"
+              >
+                <span class="vc-state-dot" aria-hidden="true"></span>
+                <span>{{ item.text }}</span>
+              </div>
+            </div>
+
+            <section class="vc-workbook-card" aria-label="汇总数据状态">
+              <span class="vc-section-label">汇总数据</span>
+              <div class="vc-workbook-grid">
+                <div
+                  v-for="item in view.workbookItems"
+                  :key="item.key"
+                  class="vc-workbook-item"
+                  :data-state="item.state"
+                >
+                  <span class="vc-state-dot" aria-hidden="true"></span>
+                  <span class="vc-workbook-copy">
+                    <strong>{{ item.label }}</strong>
+                    <small>{{ item.text }}</small>
+                  </span>
+                </div>
+              </div>
+              <p class="vc-workbook-status" role="status">{{ workbookError || view.workbookStatus }}</p>
+            </section>
+
+            <div class="vc-actions">
+              <el-button
+                v-if="!view.running"
+                ref="startButton"
+                type="primary"
+                :disabled="view.startDisabled"
+                @click="startRun"
+              >{{ view.startLabel }}</el-button>
+              <el-button
+                v-else
+                :disabled="view.pauseDisabled"
+                @click="pauseRun"
+              >{{ view.pauseDisabled ? '正在暂停' : '暂停采集' }}</el-button>
+              <el-button :disabled="view.downloadDisabled" @click="download">{{ config.downloadLabel }}</el-button>
+              <el-button
+                :disabled="view.combinedDownloadDisabled"
+                @click="downloadCombined"
+              >下载总 Excel</el-button>
+            </div>
+
+            <p class="vc-status" role="status">{{ view.status }}</p>
+
+            <section class="vc-content-card">
+              <div class="vc-summary">
+                <div class="vc-filter-list">
+                  <el-tag v-for="filter in view.filters" :key="filter" effect="plain" round>{{ filter }}</el-tag>
+                </div>
+                <p class="vc-count">{{ view.countText }}</p>
+              </div>
+              <div v-if="view.rows.length" class="vc-table-scroll">
+                <table class="vc-result-table" :aria-label="config.tableLabel">
+                  <colgroup>
+                    <col
+                      v-for="column in view.columns"
+                      :key="column.prop"
+                      :style="{
+                        width: column.width ? column.width + 'px' : undefined,
+                        minWidth: column.minWidth ? column.minWidth + 'px' : undefined,
+                      }"
+                    >
+                  </colgroup>
+                  <thead>
+                    <tr>
+                      <th
+                        v-for="column in view.columns"
+                        :key="column.prop"
+                        scope="col"
+                        :class="{ 'vc-number': column.numeric }"
+                      >{{ column.label }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="row in view.rows" :key="row.key">
+                      <td
+                        v-for="column in view.columns"
+                        :key="column.prop"
+                        :class="{ 'vc-number': column.numeric }"
+                      >{{ row[column.prop] }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </div>
+        </section>
+      </transition>
+    </div>
+  `;
+
+  function resourceText(name) {
+    try {
+      return typeof GM_getResourceText === 'function' ? GM_getResourceText(name) : '';
+    } catch {
+      return '';
+    }
+  }
+
+  function loadTheme() {
+    try {
+      if (typeof GM_getValue === 'function') {
+        return GM_getValue(themeKey, 'sun') === 'dark' ? 'dark' : 'sun';
+      }
+    } catch {
+      // Fall through to origin-local storage when userscript storage is unavailable.
+    }
+    try {
+      return localStorage.getItem(themeKey) === 'dark' ? 'dark' : 'sun';
+    } catch {
+      return 'sun';
+    }
+  }
+
+  function storeTheme(theme) {
+    const value = theme === 'dark' ? 'dark' : 'sun';
+    try {
+      if (typeof GM_setValue === 'function') {
+        GM_setValue(themeKey, value);
+        return;
+      }
+    } catch {
+      // Fall through to origin-local storage when userscript storage is unavailable.
+    }
+    try {
+      localStorage.setItem(themeKey, value);
+    } catch {
+      // Theme persistence is optional when storage is unavailable.
+    }
+  }
+
+  function floatingPositionKey(hostId, kind) {
+    return `${positionKeyPrefix}:${hostId}:${kind}`;
+  }
+
+  function validPosition(value) {
+    if (!value || !Number.isFinite(Number(value.x)) || !Number.isFinite(Number(value.y))) {
+      return null;
+    }
+    return { x: Number(value.x), y: Number(value.y) };
+  }
+
+  function loadFloatingPosition(key) {
+    try {
+      if (typeof GM_getValue === 'function') return validPosition(GM_getValue(key, null));
+    } catch {
+      // Fall through to origin-local storage when userscript storage is unavailable.
+    }
+    try {
+      return validPosition(JSON.parse(localStorage.getItem(key) ?? 'null'));
+    } catch {
+      return null;
+    }
+  }
+
+  function storeFloatingPosition(key, position) {
+    const value = validPosition(position);
+    if (!value) return;
+    try {
+      if (typeof GM_setValue === 'function') {
+        GM_setValue(key, value);
+        return;
+      }
+    } catch {
+      // Fall through to origin-local storage when userscript storage is unavailable.
+    }
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+    } catch {
+      // Position persistence is optional when storage is unavailable.
+    }
+  }
+
+  function fitFloatingPosition(position, size, viewport, gap = edgeGap, threshold = snapDistance) {
+    const width = Math.max(0, Number(size?.width) || 0);
+    const height = Math.max(0, Number(size?.height) || 0);
+    const viewportWidth = Math.max(width + gap * 2, Number(viewport?.width) || 0);
+    const viewportHeight = Math.max(height + gap * 2, Number(viewport?.height) || 0);
+    const maxX = Math.max(gap, viewportWidth - width - gap);
+    const maxY = Math.max(gap, viewportHeight - height - gap);
+    let x = Math.min(maxX, Math.max(gap, Number(position?.x) || gap));
+    let y = Math.min(maxY, Math.max(gap, Number(position?.y) || gap));
+
+    if (threshold >= 0) {
+      const leftDistance = x - gap;
+      const rightDistance = maxX - x;
+      const topDistance = y - gap;
+      const bottomDistance = maxY - y;
+      if (Math.min(leftDistance, rightDistance) <= threshold) {
+        x = leftDistance <= rightDistance ? gap : maxX;
+      }
+      if (Math.min(topDistance, bottomDistance) <= threshold) {
+        y = topDistance <= bottomDistance ? gap : maxY;
+      }
+    }
+
+    return { x: Math.round(x), y: Math.round(y) };
+  }
+
+  function mount(options) {
+    const host = document.createElement('div');
+    host.id = options.hostId;
+    const shadow = host.attachShadow({ mode: 'open' });
+    const style = document.createElement('style');
+    const elementCss = resourceText('ELEMENT_PLUS_CSS').replaceAll(':root', ':host');
+    const darkCss = resourceText('ELEMENT_PLUS_DARK_CSS').replaceAll('html.dark', '.vc-shell.dark');
+    style.textContent = elementCss + '\n' + darkCss + '\n' + liquidCss;
+    const root = document.createElement('div');
+    shadow.append(style, root);
+    document.body.append(host);
+
+    if (typeof Vue === 'undefined' || typeof ElementPlus === 'undefined') {
+      const fallback = document.createElement('button');
+      fallback.type = 'button';
+      fallback.textContent = '采集面板资源加载失败，请刷新页面';
+      fallback.style.cssText = 'position:fixed;right:20px;bottom:20px;z-index:2147483600;padding:12px 16px;border:1px solid #ccd5e0;border-radius:16px;background:#fff;color:#1d293a;';
+      root.append(fallback);
+      return {
+        open: () => {},
+        refresh: () => { host.hidden = !options.isVisible(); },
+      };
+    }
+
+    const positionKeys = {
+      launcher: floatingPositionKey(options.hostId, 'launcher'),
+      panel: floatingPositionKey(options.hostId, 'panel'),
+    };
+
+    const app = Vue.createApp({
+      data() {
+        const initial = options.initialPeriod();
+        return {
+          config: options.config,
+          revision: 0,
+          panelOpen: false,
+          dragKind: '',
+          dragState: null,
+          ignoreLauncherClick: false,
+          storageListeners: [],
+          workbookError: '',
+          positions: {
+            launcher: loadFloatingPosition(positionKeys.launcher),
+            panel: loadFloatingPosition(positionKeys.panel),
+          },
+          theme: loadTheme(),
+          themeOptions: [
+            { label: 'SUN', value: 'sun' },
+            { label: 'Dark', value: 'dark' },
+          ],
+          dateStart: initial.startDate,
+          dateEnd: initial.endDate,
+        };
+      },
+      computed: {
+        view() {
+          this.revision;
+          return options.getView();
+        },
+      },
+      methods: {
+        floatingElement(kind) {
+          const reference = this.$refs[kind];
+          return reference?.$el ?? reference ?? null;
+        },
+        floatingStyle(kind) {
+          const position = this.positions[kind];
+          if (!position) return undefined;
+          return {
+            insetInlineEnd: 'auto',
+            insetBlockEnd: 'auto',
+            left: `${position.x}px`,
+            top: `${position.y}px`,
+          };
+        },
+        normalizePosition(kind, threshold = snapDistance) {
+          const element = this.floatingElement(kind);
+          if (!element) return;
+          const rect = element.getBoundingClientRect();
+          if (!rect.width || !rect.height) return;
+          const position = fitFloatingPosition(
+            this.positions[kind] ?? { x: rect.left, y: rect.top },
+            rect,
+            { width: window.innerWidth, height: window.innerHeight },
+            edgeGap,
+            threshold,
+          );
+          this.positions[kind] = position;
+          storeFloatingPosition(positionKeys[kind], position);
+        },
+        startDrag(kind, event) {
+          if (event.button !== 0 || event.isPrimary === false) return;
+          if (kind === 'panel' && event.target?.closest?.('.vc-header-actions')) return;
+          const element = this.floatingElement(kind);
+          if (!element) return;
+          const rect = element.getBoundingClientRect();
+          const previousPosition = this.positions[kind]
+            ? { ...this.positions[kind] } : null;
+          this.positions[kind] = { x: rect.left, y: rect.top };
+          this.dragKind = kind;
+          this.dragState = {
+            kind,
+            element,
+            pointerId: event.pointerId,
+            pointerX: event.clientX,
+            pointerY: event.clientY,
+            previousPosition,
+            originX: rect.left,
+            originY: rect.top,
+            width: rect.width,
+            height: rect.height,
+            moved: false,
+          };
+          element.setPointerCapture?.(event.pointerId);
+          element.addEventListener('lostpointercapture', this.endDrag);
+          window.addEventListener('pointermove', this.moveDrag, { passive: false });
+          window.addEventListener('pointerup', this.endDrag);
+          window.addEventListener('pointercancel', this.endDrag);
+        },
+        moveDrag(event) {
+          const drag = this.dragState;
+          if (!drag || event.pointerId !== drag.pointerId) return;
+          const deltaX = event.clientX - drag.pointerX;
+          const deltaY = event.clientY - drag.pointerY;
+          if (!drag.moved && Math.hypot(deltaX, deltaY) <= 4) return;
+          drag.moved = true;
+          event.preventDefault();
+          this.positions[drag.kind] = fitFloatingPosition(
+            { x: drag.originX + deltaX, y: drag.originY + deltaY },
+            { width: drag.width, height: drag.height },
+            { width: window.innerWidth, height: window.innerHeight },
+            edgeGap,
+            -1,
+          );
+        },
+        endDrag(event) {
+          const drag = this.dragState;
+          if (!drag || event.pointerId !== drag.pointerId) return;
+          drag.element?.removeEventListener('lostpointercapture', this.endDrag);
+          if (drag.element?.hasPointerCapture?.(drag.pointerId)) {
+            drag.element.releasePointerCapture(drag.pointerId);
+          }
+          window.removeEventListener('pointermove', this.moveDrag);
+          window.removeEventListener('pointerup', this.endDrag);
+          window.removeEventListener('pointercancel', this.endDrag);
+          if (!drag.moved) {
+            this.positions[drag.kind] = drag.previousPosition;
+            this.dragKind = '';
+            this.dragState = null;
+            return;
+          }
+          const position = fitFloatingPosition(
+            this.positions[drag.kind],
+            { width: drag.width, height: drag.height },
+            { width: window.innerWidth, height: window.innerHeight },
+          );
+          this.positions[drag.kind] = position;
+          storeFloatingPosition(positionKeys[drag.kind], position);
+          if (drag.kind === 'launcher' && drag.moved) {
+            this.ignoreLauncherClick = true;
+            setTimeout(() => { this.ignoreLauncherClick = false; }, 0);
+          }
+          this.dragKind = '';
+          this.dragState = null;
+        },
+        handleViewportResize() {
+          if (this.positions.launcher) this.normalizePosition('launcher', -1);
+          if (this.panelOpen && this.positions.panel) this.normalizePosition('panel', -1);
+        },
+        sync() {
+          this.revision++;
+          const next = options.getView();
+          if (next.periodAutomatic && !next.running) {
+            this.dateStart = next.startDate;
+            this.dateEnd = next.endDate;
+          }
+          host.hidden = !options.isVisible();
+        },
+        openPanel() {
+          if (this.ignoreLauncherClick) return;
+          if (!options.isVisible()) return;
+          this.panelOpen = true;
+          this.sync();
+          Vue.nextTick(() => {
+            this.normalizePosition('panel');
+            const startButton = this.$refs.startButton?.$el;
+            const target = startButton && !startButton.disabled
+              ? startButton
+              : this.$refs.closeButton?.$el;
+            target?.focus();
+          });
+        },
+        closePanel() {
+          this.panelOpen = false;
+          Vue.nextTick(() => {
+            this.normalizePosition('launcher');
+            this.$refs.launcher?.$el?.focus();
+          });
+        },
+        saveTheme(value) {
+          storeTheme(value);
+        },
+        applyDates() {
+          options.applyDates(this.dateStart, this.dateEnd, false);
+          this.sync();
+        },
+        useMonth() {
+          const period = options.monthPeriod();
+          this.dateStart = period.startDate;
+          this.dateEnd = period.endDate;
+          options.applyDates(this.dateStart, this.dateEnd, true);
+          this.sync();
+        },
+        startRun() {
+          options.start();
+        },
+        pauseRun() {
+          options.pause();
+          this.sync();
+        },
+        download() {
+          options.download();
+        },
+        downloadCombined() {
+          try {
+            options.downloadCombined();
+            this.workbookError = '';
+          } catch (error) {
+            this.workbookError = error?.message || '总 Excel 下载失败，请刷新页面后重试。';
+          }
+        },
+      },
+      mounted() {
+        window.addEventListener('resize', this.handleViewportResize);
+        this.storageListeners = options.subscribe?.(() => this.sync()) ?? [];
+        Vue.nextTick(() => this.normalizePosition('launcher'));
+      },
+      beforeUnmount() {
+        options.unsubscribe?.(this.storageListeners);
+        window.removeEventListener('resize', this.handleViewportResize);
+        window.removeEventListener('pointermove', this.moveDrag);
+        window.removeEventListener('pointerup', this.endDrag);
+        window.removeEventListener('pointercancel', this.endDrag);
+      },
+      template,
+    });
+    let vm;
+    try {
+      app.use(ElementPlus);
+      vm = app.mount(root);
+    } finally {
+      if (typeof __vcRestoreFrameworkGlobals === 'function') __vcRestoreFrameworkGlobals();
+    }
+
+    const refresh = () => vm.sync();
+    window.addEventListener('popstate', refresh);
+    window.navigation?.addEventListener('currententrychange', refresh);
+    refresh();
+    return { open: () => vm.openPanel(), refresh };
+  }
+
+  return { fitFloatingPosition, mount };
+})();
 
 (() => {
   'use strict';
@@ -167,7 +1565,7 @@
   }
 
   function syncAutomaticPeriod() {
-    if (!periodAutomatic || batch?.phase === 'running') return;
+    if (!periodAutomatic || batch?.phase === 'running' || batch?.phase === 'complete') return;
     const nextPeriod = recentPageMonthPeriod(templatesForPage());
     if (!samePeriod(selectedPeriod, nextPeriod)) {
       selectedPeriod = nextPeriod;
@@ -504,11 +1902,19 @@
     if (!list[0] || !list[1] || dateError || batch?.phase === 'running') return;
 
     const previous = batch?.account === currentPage() ? batch : null;
-    const run = canResume(previous, list) ? previous : planBatch(list);
+    const resume = canResume(previous, list);
+    if (!resume) {
+      videoCollectionWorkbook.begin('qianchuan', currentPage() || 'default', {
+        startDate: selectedPeriod.startTime.slice(0, 10),
+        endDate: selectedPeriod.endTime.slice(0, 10),
+      });
+    }
+    const run = resume ? previous : planBatch(list);
     batch = run;
     run.phase = 'running';
     run.pauseRequested = false;
     run.error = '';
+    run.storageError = '';
     updatePanel();
 
     try {
@@ -518,6 +1924,10 @@
     } finally {
       run.phase = !run.restartRequired && run.scans.every((scan) => scan.complete) ? 'complete' : 'paused';
       run.activeMode = null;
+      if (run.phase === 'complete') {
+        run.storageError = videoCollectionWorkbook.save('qianchuan', workbookSnapshot(run))
+          ? '' : '采集完成，但总表数据保存失败，请刷新页面后重新采集。';
+      }
       syncAutomaticPeriod();
       updatePanel();
     }
@@ -534,13 +1944,36 @@
     return totals;
   }
 
+  function workbookSnapshot(run) {
+    const totals = summarize(run);
+    const rows = [];
+    for (const scan of run.scans) {
+      for (const row of scan.matches.values()) {
+        rows.push({
+          promotionType: modes[scan.mode].label,
+          materialId: row.id,
+          title: row.name,
+          spendYuan: row.spendCents / 100,
+          impressions: row.impressions,
+        });
+      }
+    }
+    return {
+      scope: run.account || 'default',
+      startDate: run.startTime.slice(0, 10),
+      endDate: run.endTime.slice(0, 10),
+      scanned: totals.scanned,
+      rows,
+    };
+  }
+
   function csvCell(value) {
     let text = String(value);
     if (/^[\t\r\n]|^\s*[=+@-]/.test(text)) text = `'${text}`;
     return `"${text.replaceAll('"', '""')}"`;
   }
 
-  function downloadCsv(run) {
+  function csvText(run) {
     const totals = summarize(run);
     const lines = [['推广类型', '素材 ID', '素材名称', '消耗（元）', '展现（次）', '视频链接']];
     for (const scan of run.scans) {
@@ -550,8 +1983,11 @@
     }
     lines.push(['合计', '', `${totals.matches} 条素材`, (totals.spendCents / 100).toFixed(2), totals.impressions, '']);
 
-    const csv = '\uFEFF' + lines.map((line) => line.map(csvCell).join(',')).join('\r\n');
-    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    return '\uFEFF' + lines.map((line) => line.map(csvCell).join(',')).join('\r\n');
+  }
+
+  function downloadCsv(run) {
+    const url = URL.createObjectURL(new Blob([csvText(run)], { type: 'text/csv;charset=utf-8' }));
     const link = document.createElement('a');
     link.href = url;
     link.download = `qianchuan-material-${run.startTime.slice(0, 10)}_${run.endTime.slice(0, 10)}.csv`;
@@ -571,449 +2007,147 @@
     return `${label} ${scan.pages} / ${pages} 页`;
   }
 
-  function panelMarkup() {
-    return `
-      <style>
-        :host {
-          --collector-ink: #1d293a;
-          --collector-muted: #516176;
-          --collector-border: #dbe2eb;
-          --collector-blue: #1755c7;
-          --collector-tint: #f4f7fb;
-          font-family: inherit;
-          font-size: 13px;
-          line-height: 1.45;
-        }
+  function panelView() {
+    const list = templatesForPage();
+    const ready = Boolean(list[0] && list[1]);
+    const run = batch?.account === currentPage() ? batch : null;
+    const running = run?.phase === 'running';
+    const complete = run?.phase === 'complete';
+    const differentScopes = list.filter((item) => item && !samePeriod(item, run ?? selectedPeriod));
+    const totals = summarize(run);
+    const workbookState = videoCollectionWorkbook.summary();
+    const rows = [];
 
-        *, *::before, *::after { box-sizing: border-box; }
-        [hidden] { display: none !important; }
-
-        .collector-launcher,
-        .collector-panel {
-          position: fixed;
-          z-index: 2147483600;
-          inset-inline-end: 18px;
-          inset-block-end: 18px;
-          color: var(--collector-ink);
-        }
-
-        button, input { font: inherit; }
-        button { cursor: pointer; }
-
-        button {
-          min-height: 34px;
-          padding: 5px 12px;
-          color: var(--collector-ink);
-          background: #fff;
-          border: 1px solid var(--collector-border);
-          border-radius: 6px;
-        }
-
-        button:hover:not(:disabled) { background: var(--collector-tint); }
-        button:disabled { color: #687689; opacity: 0.7; cursor: default; }
-
-        button:focus-visible, input:focus-visible {
-          outline: 2px solid var(--collector-blue);
-          outline-offset: 2px;
-        }
-
-        .collector-primary {
-          color: #fff;
-          background: var(--collector-blue);
-          border-color: var(--collector-blue);
-          font-weight: 600;
-        }
-
-        .collector-primary:hover:not(:disabled) {
-          color: #fff;
-          background: #1248ad;
-        }
-
-        .collector-launcher {
-          min-height: 40px;
-          padding-inline: 16px;
-          box-shadow: 0 3px 12px rgb(28 49 83 / 20%);
-        }
-
-        .collector-panel {
-          width: min(480px, calc(100vw - 36px));
-          max-height: min(620px, calc(100vh - 36px));
-          max-height: min(620px, calc(100dvh - 36px));
-          overflow: auto;
-          overscroll-behavior: contain;
-          background: #fff;
-          border: 1px solid var(--collector-border);
-          border-radius: 10px;
-          box-shadow: 0 10px 30px rgb(24 42 68 / 18%);
-        }
-
-        .collector-header {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 12px;
-          padding: 12px 16px;
-          border-bottom: 1px solid var(--collector-border);
-        }
-
-        .collector-header h2 { margin: 0; font-size: 16px; font-weight: 650; }
-        .collector-close { min-height: 30px; padding: 3px 9px; }
-
-        .collector-body {
-          display: grid;
-          gap: 12px;
-          padding: 14px 16px 16px;
-        }
-
-        .collector-period { margin: 0; color: var(--collector-muted); overflow-wrap: anywhere; }
-
-        .collector-period-row {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 12px;
-        }
-
-        .collector-date-fields {
-          display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 10px;
-        }
-
-        .collector-date-fields label {
-          display: grid;
-          gap: 6px;
-          min-width: 0;
-        }
-
-        .collector-date-fields input {
-          width: 100%;
-          min-width: 0;
-          height: 34px;
-          padding: 4px 8px;
-          color: var(--collector-ink);
-          background: #fff;
-          border: 1px solid var(--collector-border);
-          border-radius: 6px;
-        }
-
-        .collector-date-fields input:disabled {
-          color: var(--collector-muted);
-          background: var(--collector-tint);
-        }
-
-        .collector-progress {
-          display: grid;
-          gap: 6px;
-          margin: 0;
-          padding: 0;
-          list-style: none;
-        }
-
-        .collector-progress li {
-          min-height: 32px;
-          padding: 6px 8px;
-          background: var(--collector-tint);
-          border-radius: 5px;
-          font-variant-numeric: tabular-nums;
-          overflow-wrap: anywhere;
-        }
-
-        .collector-actions, .collector-filters {
-          display: flex;
-          flex-wrap: wrap;
-          align-items: center;
-          gap: 8px;
-        }
-
-        .collector-details {
-          display: grid;
-          gap: 8px;
-          padding-top: 12px;
-          border-top: 1px solid var(--collector-border);
-        }
-
-        .collector-filters, .collector-status, .collector-count { margin: 0; }
-        .collector-filters { column-gap: 12px; row-gap: 4px; }
-        .collector-filters, .collector-status { color: var(--collector-muted); }
-        .collector-status { overflow-wrap: anywhere; }
-        .collector-status:empty { display: none; }
-        .collector-scope-note {
-          padding: 8px 10px;
-          color: #7a4f00;
-          background: #fff8e6;
-          border-inline-start: 3px solid #e5a400;
-          border-radius: 5px;
-        }
-        .collector-count { color: var(--collector-ink); font-weight: 600; }
-        .collector-filters span { white-space: nowrap; }
-
-        .collector-table-scroll {
-          max-height: 230px;
-          overflow: auto;
-          overscroll-behavior: contain;
-          border: 1px solid var(--collector-border);
-          border-radius: 6px;
-        }
-
-        table {
-          width: 100%;
-          table-layout: fixed;
-          border-spacing: 0;
-          text-align: left;
-        }
-
-        th, td {
-          padding: 7px 8px;
-          vertical-align: top;
-          overflow-wrap: anywhere;
-          border-bottom: 1px solid var(--collector-border);
-        }
-
-        th {
-          position: sticky;
-          inset-block-start: 0;
-          background: var(--collector-tint);
-          color: var(--collector-muted);
-          font-weight: 650;
-          white-space: nowrap;
-        }
-
-        th:first-child { width: 21%; }
-
-        th:nth-child(n + 3), td:nth-child(n + 3) {
-          width: 22%;
-          text-align: right;
-          font-variant-numeric: tabular-nums;
-        }
-
-        tbody tr:last-child td { border-bottom: 0; }
-
-        @media (max-width: 400px) {
-          .collector-launcher, .collector-panel { inset-inline-end: 12px; inset-block-end: 12px; }
-          .collector-panel { width: calc(100vw - 24px); max-height: calc(100dvh - 24px); }
-          .collector-header, .collector-body { padding-inline: 12px; }
-          th, td { padding-inline: 5px; }
-          th { white-space: normal; }
-          th:first-child { width: 22%; }
-        }
-      </style>
-      <button id="collector-open" class="collector-launcher collector-primary" type="button" aria-controls="collector-panel" aria-expanded="false">素材采集</button>
-      <section id="collector-panel" class="collector-panel" aria-labelledby="collector-title" hidden>
-        <header class="collector-header">
-          <h2 id="collector-title">素材采集</h2>
-          <button id="collector-close" class="collector-close" type="button" aria-label="关闭素材采集面板">关闭</button>
-        </header>
-        <div class="collector-body">
-          <div class="collector-period-row">
-            <p id="collector-period" class="collector-period">采集日期</p>
-            <button id="collector-month" type="button" title="本月 1 日至最近页面查询截止日，无近期查询时截至昨天。每月 1 日选取上月。">本月</button>
-          </div>
-          <div class="collector-date-fields">
-            <label>开始日期<input id="collector-date-start" type="date" required></label>
-            <label>结束日期<input id="collector-date-end" type="date" required></label>
-          </div>
-          <p id="collector-scope-note" class="collector-status collector-scope-note" role="status" hidden></p>
-          <ul class="collector-progress">
-            <li id="collector-live">推直播间 待捕获</li>
-            <li id="collector-product">推商品 待捕获</li>
-          </ul>
-          <div class="collector-actions">
-            <button id="collector-start" class="collector-primary" type="button" disabled>开始采集</button>
-            <button id="collector-stop" type="button" hidden>暂停采集</button>
-            <button id="collector-download" type="button" disabled>下载 CSV</button>
-          </div>
-          <p id="collector-status" class="collector-status" role="status"></p>
-          <div class="collector-details">
-            <p class="collector-filters"><span>消耗 ≥ ${numberFormat.format(minSpend)} 元</span><span>展现 ≥ ${numberFormat.format(minImpressions)} 次</span></p>
-            <p id="collector-count" class="collector-count">已采集 0 条 达标 0 条</p>
-            <div class="collector-table-scroll" hidden>
-              <table aria-label="符合筛选条件的素材">
-                <thead>
-                  <tr><th scope="col">推广类型</th><th scope="col">素材</th><th scope="col">消耗（元）</th><th scope="col">展现（次）</th></tr>
-                </thead>
-                <tbody id="collector-rows"></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </section>
-    `;
-  }
-
-  function mountPanel() {
-    const host = document.createElement('div');
-    host.id = 'qianchuan-material-collector';
-    const shadow = host.attachShadow({ mode: 'open' });
-    shadow.innerHTML = panelMarkup();
-    const openButton = shadow.getElementById('collector-open');
-    const panel = shadow.getElementById('collector-panel');
-    const closeButton = shadow.getElementById('collector-close');
-    const dateStart = shadow.getElementById('collector-date-start');
-    const dateEnd = shadow.getElementById('collector-date-end');
-    const month = shadow.getElementById('collector-month');
-    const scopeNote = shadow.getElementById('collector-scope-note');
-    dateStart.value = selectedPeriod.startTime.slice(0, 10);
-    dateEnd.value = selectedPeriod.endTime.slice(0, 10);
-    const progress = [
-      shadow.getElementById('collector-live'),
-      shadow.getElementById('collector-product'),
-    ];
-    const start = shadow.getElementById('collector-start');
-    const stop = shadow.getElementById('collector-stop');
-    const download = shadow.getElementById('collector-download');
-    const status = shadow.getElementById('collector-status');
-    const count = shadow.getElementById('collector-count');
-    const rows = shadow.getElementById('collector-rows');
-    const table = rows.closest('.collector-table-scroll');
-    let lastRun;
-    let lastMatchCount;
-
-    function renderPreview(run, matches) {
-      if (lastRun === run && lastMatchCount === matches) return;
-      lastRun = run;
-      lastMatchCount = matches;
-      const preview = [];
-      for (const scan of run?.scans ?? []) {
-        for (const item of scan.matches.values()) {
-          if (preview.length >= previewLimit) break;
-          const tr = document.createElement('tr');
-          const values = [
-            modes[scan.mode].label, item.name, numberFormat.format(item.spendCents / 100),
-            numberFormat.format(item.impressions),
-          ];
-          for (const value of values) {
-            const td = document.createElement('td');
-            td.textContent = value;
-            tr.append(td);
-          }
-          preview.push(tr);
-        }
+    for (const scan of run?.scans ?? []) {
+      for (const item of scan.matches.values()) {
+        if (rows.length >= previewLimit) break;
+        rows.push({
+          key: `${scan.mode}:${item.id || rows.length}`,
+          type: modes[scan.mode].label,
+          name: item.name,
+          spend: numberFormat.format(item.spendCents / 100),
+          impressions: numberFormat.format(item.impressions),
+        });
       }
-      rows.replaceChildren(...preview);
-      table.hidden = preview.length === 0;
     }
 
-    function renderPanel() {
-      const list = templatesForPage();
-      const ready = Boolean(list[0] && list[1]);
-      const run = batch?.account === currentPage() ? batch : null;
-      const running = batch?.phase === 'running';
-      const complete = run?.phase === 'complete';
-      if (periodAutomatic && !running) {
-        dateStart.value = selectedPeriod.startTime.slice(0, 10);
-        dateEnd.value = selectedPeriod.endTime.slice(0, 10);
-      }
-      dateStart.disabled = running;
-      dateEnd.disabled = running;
-      month.disabled = running;
-      const scope = run ?? selectedPeriod;
-      const differentScopes = list.filter((template) => template && !samePeriod(template, scope));
-      scopeNote.hidden = differentScopes.length === 0;
-      scopeNote.textContent = scopeNote.hidden ? '' : [
-        ...differentScopes.map((template) => `${modes[template.mode].label} 页面查询 ${periodText(template)}`),
-        `采集日期 ${periodText(scope)}`,
-        '核对采集序号时，请将对应页面设为相同日期，并按展现从高到低排序。',
-      ].join('。');
+    let status = '';
+    if (dateError) status = dateError;
+    else if (running) status = run.pauseRequested ? '正在暂停' : '正在逐页采集，请保持页面打开。';
+    else if (complete) status = run.storageError || '两类素材筛选完成，可以下载当前 CSV。';
+    else if (run?.phase === 'paused') status = run.error || '采集已暂停，进度已保留。';
+    else if (!ready) status = '请分别打开推直播间和推商品，等待捕获列表请求。';
 
-      for (const [index, mode] of modeCodes.entries()) {
-        progress[index].textContent = scanProgress(mode, list[index], run?.scans[index]);
-      }
-      start.hidden = running;
-      start.disabled = !ready || Boolean(dateError);
-      start.textContent = run ? (canResume(run, list) ? '继续采集' : '重新采集') : '开始采集';
-      stop.hidden = !running;
-      stop.disabled = Boolean(batch?.pauseRequested);
-      download.disabled = !complete || Boolean(dateError);
+    const scopeNote = differentScopes.length ? [
+      ...differentScopes.map((item) => `${modes[item.mode].label} 页面查询 ${periodText(item)}`),
+      `采集日期 ${periodText(run ?? selectedPeriod)}`,
+      '核对采集序号时，请将对应页面设为相同日期，并按展现从高到低排序。',
+    ].join('。') : '';
 
-      if (dateError) {
-        status.textContent = dateError;
-      } else if (running) {
-        status.textContent = batch.pauseRequested ? '正在暂停' : '正在逐页采集，请保持页面打开。';
-      } else if (complete) {
-        status.textContent = '两类素材筛选完成，可以下载汇总表。';
-      } else if (run?.phase === 'paused') {
-        status.textContent = run.error || '采集已暂停，进度已保留。';
-      } else {
-        status.textContent = ready ? '' : '请分别打开推直播间和推商品，等待捕获列表请求。';
-      }
-
-      const totals = summarize(run);
-      count.textContent = [
+    return {
+      periodLabel: '统计周期',
+      periodText: periodText(run ?? selectedPeriod),
+      periodAutomatic,
+      startDate: selectedPeriod.startTime.slice(0, 10),
+      endDate: selectedPeriod.endTime.slice(0, 10),
+      running,
+      pauseDisabled: Boolean(run?.pauseRequested),
+      startDisabled: !ready || Boolean(dateError),
+      downloadDisabled: !complete || Boolean(dateError),
+      combinedDownloadDisabled: !workbookState.ready,
+      workbookItems: workbookState.items,
+      workbookStatus: workbookState.message,
+      startLabel: run ? (canResume(run, list) ? '继续采集' : '重新采集') : '开始采集',
+      scopeNote,
+      status,
+      progress: modeCodes.map((mode, index) => {
+        const scan = run?.scans[index];
+        const item = list[index];
+        let state = item ? 'ready' : 'waiting';
+        if (scan?.complete) state = 'done';
+        else if (running && run.activeMode === mode) state = 'active';
+        return { key: mode, state, text: scanProgress(mode, item, scan) };
+      }),
+      filters: [
+        `消耗 ≥ ${numberFormat.format(minSpend)} 元`,
+        `展现 ≥ ${numberFormat.format(minImpressions)} 次`,
+      ],
+      countText: [
         `已采集 ${numberFormat.format(totals.scanned)} 条`,
         `达标 ${numberFormat.format(totals.matches)} 条`,
         `消耗 ${numberFormat.format(totals.spendCents / 100)} 元`,
         `展现 ${numberFormat.format(totals.impressions)} 次`,
         totals.matches > previewLimit ? `预览前 ${previewLimit} 条` : '',
-      ].filter(Boolean).join(' ');
-      renderPreview(run, totals.matches);
-    }
-
-    function setPanelOpen(open) {
-      panel.hidden = !open;
-      openButton.hidden = open;
-      openButton.setAttribute('aria-expanded', String(open));
-      if (open) {
-        renderPanel();
-        (!start.hidden && !start.disabled ? start : closeButton).focus();
-      } else {
-        openButton.focus();
-      }
-    }
-
-    openButton.addEventListener('click', () => setPanelOpen(true));
-    closeButton.addEventListener('click', () => setPanelOpen(false));
-    function applyDates(automatic = false) {
-      if (batch?.phase === 'running') return;
-      periodAutomatic = automatic === true;
-      const startDate = dateStart.value;
-      const endDate = dateEnd.value;
-      dateError = '';
-      if (!isDate(startDate) || !isDate(endDate) || startDate > endDate) {
-        dateError = '请选择有效的起止日期，结束日期须等于或晚于开始日期。';
-      } else {
-        const nextPeriod = { startTime: `${startDate} 00:00:00`, endTime: `${endDate} 23:59:59` };
-        if (selectedPeriod.startTime !== nextPeriod.startTime || selectedPeriod.endTime !== nextPeriod.endTime) {
-          selectedPeriod = nextPeriod;
-          batch = undefined;
-        }
-      }
-      renderPanel();
-    }
-    dateStart.addEventListener('input', () => applyDates());
-    dateEnd.addEventListener('input', () => applyDates());
-    month.addEventListener('click', () => {
-      const currentMonth = recentPageMonthPeriod(templatesForPage());
-      dateStart.value = currentMonth.startTime.slice(0, 10);
-      dateEnd.value = currentMonth.endTime.slice(0, 10);
-      applyDates(true);
-    });
-    panel.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape') setPanelOpen(false);
-    });
-    start.addEventListener('click', startCollection);
-    stop.addEventListener('click', () => {
-      if (batch?.phase !== 'running') return;
-      batch.pauseRequested = true;
-      renderPanel();
-    });
-    download.addEventListener('click', () => {
-      if (batch?.account === currentPage() && batch.phase === 'complete') downloadCsv(batch);
-    });
-
-    document.body.append(host);
-    updatePanel = () => {
-      host.hidden = currentPage() === null;
-      if (!host.hidden && !panel.hidden) renderPanel();
-    };
-    window.addEventListener('popstate', updatePanel);
-    window.navigation?.addEventListener('currententrychange', updatePanel);
-    updatePanel();
-    return () => {
-      if (currentPage() !== null) setPanelOpen(true);
+      ].filter(Boolean).join(' '),
+      rows,
+      columns: [
+        { prop: 'type', label: '推广类型', width: 92 },
+        { prop: 'name', label: '素材', minWidth: 180 },
+        { prop: 'spend', label: '消耗（元）', width: 104, align: 'right', numeric: true },
+        { prop: 'impressions', label: '展现（次）', width: 110, align: 'right', numeric: true },
+      ],
     };
   }
 
+  function applyPanelDates(startDate, endDate, automatic = false) {
+    if (batch?.phase === 'running') return;
+    periodAutomatic = automatic === true;
+    dateError = '';
+    if (!isDate(startDate) || !isDate(endDate) || startDate > endDate) {
+      dateError = '请选择有效的起止日期，结束日期须等于或晚于开始日期。';
+    } else {
+      const nextPeriod = {
+        startTime: `${startDate} 00:00:00`,
+        endTime: `${endDate} 23:59:59`,
+      };
+      if (!samePeriod(selectedPeriod, nextPeriod)) {
+        selectedPeriod = nextPeriod;
+        batch = undefined;
+      }
+    }
+    updatePanel();
+  }
+
+  function mountPanel() {
+    const controller = videoCollectionLiquidUi.mount({
+      hostId: 'qianchuan-material-collector',
+      config: {
+        title: '素材采集',
+        launcherLabel: '素材采集',
+        downloadLabel: '下载当前 CSV',
+        tableLabel: '符合筛选条件的素材',
+      },
+      initialPeriod: () => ({
+        startDate: selectedPeriod.startTime.slice(0, 10),
+        endDate: selectedPeriod.endTime.slice(0, 10),
+      }),
+      getView: panelView,
+      isVisible: () => currentPage() !== null,
+      applyDates: applyPanelDates,
+      monthPeriod: () => {
+        const current = recentPageMonthPeriod(templatesForPage());
+        return {
+          startDate: current.startTime.slice(0, 10),
+          endDate: current.endTime.slice(0, 10),
+        };
+      },
+      start: startCollection,
+      pause: () => {
+        if (batch?.phase !== 'running') return;
+        batch.pauseRequested = true;
+        updatePanel();
+      },
+      download: () => {
+        if (batch?.account === currentPage() && batch.phase === 'complete') downloadCsv(batch);
+      },
+      downloadCombined: () => videoCollectionWorkbook.downloadCombined(),
+      subscribe: (callback) => videoCollectionWorkbook.subscribe(callback),
+      unsubscribe: (listeners) => videoCollectionWorkbook.unsubscribe(listeners),
+    });
+    updatePanel = controller.refresh;
+    controller.refresh();
+    return controller.open;
+  }
   let openPanel;
   if (document.body) openPanel = mountPanel();
   else document.addEventListener('DOMContentLoaded', () => { openPanel = mountPanel(); }, { once: true });
@@ -1204,8 +2338,14 @@
     return onSelfVideoPage() && template && run.queryKey === template.keyForPeriod(run);
   }
 
+  function collectionScope() {
+    const accountType = template?.source.searchParams.get('account_type') || 'default';
+    const authorId = template?.source.searchParams.get('author_id') || 'default';
+    return `${accountType}:${authorId}`;
+  }
+
   function syncAutomaticPeriod() {
-    if (!periodAutomatic || batch?.phase === 'running') return;
+    if (!periodAutomatic || batch?.phase === 'running' || batch?.phase === 'complete') return;
     const nextPeriod = recentPageMonthPeriod(template?.sourcePeriod);
     if (!samePeriod(selectedPeriod, nextPeriod)) {
       selectedPeriod = nextPeriod;
@@ -1415,11 +2555,14 @@
 
   async function startCollection() {
     if (!template || dateError || batch?.phase === 'running') return;
-    const run = canResume(batch) ? batch : planBatch();
+    const resume = canResume(batch);
+    if (!resume) videoCollectionWorkbook.begin('compass', collectionScope(), selectedPeriod);
+    const run = resume ? batch : planBatch();
     batch = run;
     run.phase = 'running';
     run.pauseRequested = false;
     run.error = '';
+    run.storageError = '';
     updatePanel();
     try {
       await collect(run);
@@ -1427,6 +2570,10 @@
       run.error = error.message;
     } finally {
       run.phase = !run.restartRequired && run.complete ? 'complete' : 'paused';
+      if (run.phase === 'complete') {
+        run.storageError = videoCollectionWorkbook.save('compass', workbookSnapshot(run))
+          ? '' : '采集完成，但总表数据保存失败，请刷新页面后重新采集。';
+      }
       syncAutomaticPeriod();
       updatePanel();
     }
@@ -1441,6 +2588,19 @@
   function sortedMatches(run) {
     return [...(run?.matches.values() ?? [])]
       .sort((left, right) => right.watchCount - left.watchCount || left.title.localeCompare(right.title, 'zh-CN'));
+  }
+
+  function workbookSnapshot(run) {
+    return {
+      scope: collectionScope(),
+      startDate: run.startDate,
+      endDate: run.endDate,
+      scanned: run.scanned,
+      rows: sortedMatches(run).map((row) => ({
+        title: row.title,
+        watchCount: row.watchCount,
+      })),
+    };
   }
 
   function csvText(run) {
@@ -1470,273 +2630,112 @@
     return `自营视频 ${run.pages} / ${numberFormat.format(totalPages)} 页`;
   }
 
-  function panelMarkup() {
-    return `
-      <style>
-        :host {
-          --self-ink: #1d293a;
-          --self-muted: #516176;
-          --self-border: #dbe2eb;
-          --self-blue: #1755c7;
-          --self-tint: #f4f7fb;
-          font-family: inherit;
-          font-size: 13px;
-          line-height: 1.45;
-        }
-        *, *::before, *::after { box-sizing: border-box; }
-        [hidden] { display: none !important; }
-        button, input { font: inherit; }
-        button { cursor: pointer; }
-        .self-launcher, .self-panel {
-          position: fixed;
-          z-index: 2147483600;
-          inset-inline-end: 18px;
-          inset-block-end: 18px;
-          color: var(--self-ink);
-        }
-        button {
-          min-height: 34px;
-          padding: 5px 12px;
-          color: var(--self-ink);
-          background: #fff;
-          border: 1px solid var(--self-border);
-          border-radius: 6px;
-        }
-        button:hover:not(:disabled) { background: var(--self-tint); }
-        button:disabled { color: #687689; opacity: 0.7; cursor: default; }
-        button:focus-visible, input:focus-visible { outline: 2px solid var(--self-blue); outline-offset: 2px; }
-        .self-primary { color: #fff; background: var(--self-blue); border-color: var(--self-blue); font-weight: 600; }
-        .self-primary:hover:not(:disabled) { color: #fff; background: #1248ad; }
-        .self-launcher { min-height: 40px; padding-inline: 16px; box-shadow: 0 3px 12px rgb(28 49 83 / 20%); }
-        .self-panel {
-          width: min(480px, calc(100vw - 36px));
-          max-height: min(620px, calc(100dvh - 36px));
-          overflow: auto;
-          overscroll-behavior: contain;
-          background: #fff;
-          border: 1px solid var(--self-border);
-          border-radius: 10px;
-          box-shadow: 0 10px 30px rgb(24 42 68 / 18%);
-        }
-        .self-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--self-border); }
-        .self-header h2 { margin: 0; font-size: 16px; font-weight: 650; }
-        .self-close { min-height: 30px; padding: 3px 9px; }
-        .self-body { display: grid; gap: 12px; padding: 14px 16px 16px; }
-        .self-period-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-        .self-period, .self-status, .self-count { margin: 0; }
-        .self-period, .self-status { color: var(--self-muted); overflow-wrap: anywhere; }
-        .self-status:empty { display: none; }
-        .self-date-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-        .self-date-fields label { display: grid; gap: 6px; min-width: 0; }
-        .self-date-fields input { width: 100%; min-width: 0; height: 34px; padding: 4px 8px; color: var(--self-ink); background: #fff; border: 1px solid var(--self-border); border-radius: 6px; }
-        .self-date-fields input:disabled { color: var(--self-muted); background: var(--self-tint); }
-        .self-progress { min-height: 32px; margin: 0; padding: 6px 8px; background: var(--self-tint); border-radius: 5px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
-        .self-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-        .self-note { padding: 8px 10px; color: #7a4f00; background: #fff8e6; border-inline-start: 3px solid #e5a400; border-radius: 5px; }
-        .self-details { display: grid; gap: 8px; padding-top: 12px; border-top: 1px solid var(--self-border); }
-        .self-filter { margin: 0; color: var(--self-muted); }
-        .self-count { color: var(--self-ink); font-weight: 600; }
-        .self-table-scroll { max-height: 230px; overflow: auto; overscroll-behavior: contain; border: 1px solid var(--self-border); border-radius: 6px; }
-        table { width: 100%; table-layout: fixed; border-spacing: 0; text-align: left; }
-        th, td { padding: 7px 8px; vertical-align: top; overflow-wrap: anywhere; border-bottom: 1px solid var(--self-border); }
-        th { position: sticky; inset-block-start: 0; background: var(--self-tint); color: var(--self-muted); font-weight: 650; white-space: nowrap; }
-        th:last-child, td:last-child { width: 30%; text-align: right; font-variant-numeric: tabular-nums; }
-        tbody tr:last-child td { border-bottom: 0; }
-        @media (max-width: 400px) {
-          .self-launcher, .self-panel { inset-inline-end: 12px; inset-block-end: 12px; }
-          .self-panel { width: calc(100vw - 24px); max-height: calc(100dvh - 24px); }
-          .self-header, .self-body { padding-inline: 12px; }
-        }
-      </style>
-      <button id="self-open" class="self-launcher self-primary" type="button" aria-controls="self-panel" aria-expanded="false">自营视频采集</button>
-      <section id="self-panel" class="self-panel" aria-labelledby="self-title" hidden>
-        <header class="self-header">
-          <h2 id="self-title">自营视频采集</h2>
-          <button id="self-close" class="self-close" type="button" aria-label="关闭自营视频采集面板">关闭</button>
-        </header>
-        <div class="self-body">
-          <div class="self-period-row">
-            <p class="self-period">采集日期</p>
-            <button id="self-month" type="button" title="本月 1 日至最近页面查询截止日，无近期查询时截至昨天。每月 1 日选取上月。">本月</button>
-          </div>
-          <div class="self-date-fields">
-            <label>开始日期<input id="self-date-start" type="date" required></label>
-            <label>结束日期<input id="self-date-end" type="date" required></label>
-          </div>
-          <p id="self-scope-note" class="self-status self-note" role="status" hidden></p>
-          <p id="self-progress" class="self-progress">自营视频 待捕获</p>
-          <div class="self-actions">
-            <button id="self-start" class="self-primary" type="button" disabled>开始采集</button>
-            <button id="self-stop" type="button" hidden>暂停采集</button>
-            <button id="self-download" type="button" disabled>下载 CSV</button>
-          </div>
-          <p id="self-status" class="self-status" role="status"></p>
-          <div class="self-details">
-            <p class="self-filter">观看次数 &gt; ${numberFormat.format(minWatchCount)} 次</p>
-            <p id="self-count" class="self-count">已采集 0 条 达标 0 条</p>
-            <div class="self-table-scroll" hidden>
-              <table aria-label="符合筛选条件的自营视频">
-                <thead><tr><th scope="col">标题</th><th scope="col">观看次数</th></tr></thead>
-                <tbody id="self-rows"></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </section>
-    `;
+  function panelView() {
+    const run = batch;
+    const running = run?.phase === 'running';
+    const complete = run?.phase === 'complete';
+    const differentScope = template && !samePeriod(template.sourcePeriod, run ?? selectedPeriod);
+    const matches = sortedMatches(run);
+    const workbookState = videoCollectionWorkbook.summary();
+    let status = '';
+
+    if (dateError) status = dateError;
+    else if (running) status = run.pauseRequested ? '正在暂停' : '正在逐页采集，请保持页面打开。';
+    else if (complete) status = run.storageError || '自营视频筛选完成，可以下载当前 CSV。';
+    else if (run?.phase === 'paused') status = run.error || '采集已暂停，进度已保留。';
+    else if (!template) status = '请刷新页面或重新查询视频明细，等待捕获列表请求。';
+
+    return {
+      periodLabel: '采集日期',
+      periodText: periodText(run ?? selectedPeriod),
+      periodAutomatic,
+      startDate: selectedPeriod.startDate,
+      endDate: selectedPeriod.endDate,
+      running,
+      pauseDisabled: Boolean(run?.pauseRequested),
+      startDisabled: !template || Boolean(dateError),
+      downloadDisabled: !complete || Boolean(dateError),
+      combinedDownloadDisabled: !workbookState.ready,
+      workbookItems: workbookState.items,
+      workbookStatus: workbookState.message,
+      startLabel: run ? (canResume(run) ? '继续采集' : '重新采集') : '开始采集',
+      scopeNote: differentScope
+        ? `最近页面查询 ${periodText(template.sourcePeriod)}。采集日期 ${periodText(run ?? selectedPeriod)}。核对序号时，请将页面设为相同日期并按观看次数从高到低排序。`
+        : '',
+      status,
+      progress: [{
+        key: 'self-video',
+        state: !template ? 'waiting' : complete ? 'done' : running ? 'active' : 'ready',
+        text: progressText(run),
+      }],
+      filters: [`观看次数 > ${numberFormat.format(minWatchCount)} 次`],
+      countText: [
+        `已采集 ${numberFormat.format(run?.scanned ?? 0)} 条`,
+        `达标 ${numberFormat.format(run?.matches.size ?? 0)} 条`,
+        matches.length > previewLimit ? `预览前 ${previewLimit} 条` : '',
+      ].filter(Boolean).join(' '),
+      rows: matches.slice(0, previewLimit).map((item, index) => ({
+        key: `${index}:${item.title}:${item.watchCount}`,
+        title: item.title,
+        watchCount: numberFormat.format(item.watchCount),
+      })),
+      columns: [
+        { prop: 'title', label: '标题', minWidth: 260 },
+        { prop: 'watchCount', label: '观看次数', width: 120, align: 'right', numeric: true },
+      ],
+    };
+  }
+
+  function applyPanelDates(startDate, endDate, automatic = false) {
+    if (batch?.phase === 'running') return;
+    periodAutomatic = automatic === true;
+    dateError = '';
+    if (!isDate(startDate) || !isDate(endDate) || startDate > endDate) {
+      dateError = '请选择有效的起止日期，结束日期须等于或晚于开始日期。';
+    } else {
+      const nextPeriod = { startDate, endDate };
+      if (!samePeriod(selectedPeriod, nextPeriod)) {
+        selectedPeriod = nextPeriod;
+        batch = undefined;
+      }
+    }
+    updatePanel();
   }
 
   function mountPanel() {
-    const host = document.createElement('div');
-    host.id = 'compass-self-video-collector';
-    const shadow = host.attachShadow({ mode: 'open' });
-    shadow.innerHTML = panelMarkup();
-    const openButton = shadow.getElementById('self-open');
-    const panel = shadow.getElementById('self-panel');
-    const closeButton = shadow.getElementById('self-close');
-    const dateStart = shadow.getElementById('self-date-start');
-    const dateEnd = shadow.getElementById('self-date-end');
-    const month = shadow.getElementById('self-month');
-    const scopeNote = shadow.getElementById('self-scope-note');
-    const progress = shadow.getElementById('self-progress');
-    const start = shadow.getElementById('self-start');
-    const stop = shadow.getElementById('self-stop');
-    const download = shadow.getElementById('self-download');
-    const status = shadow.getElementById('self-status');
-    const count = shadow.getElementById('self-count');
-    const rows = shadow.getElementById('self-rows');
-    const table = rows.closest('.self-table-scroll');
-    let lastRun;
-    let lastMatchCount;
-
-    dateStart.value = selectedPeriod.startDate;
-    dateEnd.value = selectedPeriod.endDate;
-
-    function renderPreview(run) {
-      const matchCount = run?.matches.size ?? 0;
-      if (lastRun === run && lastMatchCount === matchCount) return;
-      lastRun = run;
-      lastMatchCount = matchCount;
-      const preview = sortedMatches(run).slice(0, previewLimit).map((item) => {
-        const tr = document.createElement('tr');
-        for (const value of [item.title, numberFormat.format(item.watchCount)]) {
-          const td = document.createElement('td');
-          td.textContent = value;
-          tr.append(td);
-        }
-        return tr;
-      });
-      rows.replaceChildren(...preview);
-      table.hidden = preview.length === 0;
-    }
-
-    function renderPanel() {
-      const run = batch;
-      const running = run?.phase === 'running';
-      const complete = run?.phase === 'complete';
-      if (periodAutomatic && !running) {
-        dateStart.value = selectedPeriod.startDate;
-        dateEnd.value = selectedPeriod.endDate;
-      }
-      dateStart.disabled = running;
-      dateEnd.disabled = running;
-      month.disabled = running;
-
-      const scope = run ?? selectedPeriod;
-      const differentScope = template && !samePeriod(template.sourcePeriod, scope);
-      scopeNote.hidden = !differentScope;
-      scopeNote.textContent = differentScope
-        ? `最近页面查询 ${periodText(template.sourcePeriod)}。采集日期 ${periodText(scope)}。核对序号时，请将页面设为相同日期并按观看次数从高到低排序。`
-        : '';
-      progress.textContent = progressText(run);
-      start.hidden = running;
-      start.disabled = !template || Boolean(dateError);
-      start.textContent = run ? (canResume(run) ? '继续采集' : '重新采集') : '开始采集';
-      stop.hidden = !running;
-      stop.disabled = Boolean(run?.pauseRequested);
-      download.disabled = !complete || Boolean(dateError);
-
-      if (dateError) status.textContent = dateError;
-      else if (running) status.textContent = run.pauseRequested ? '正在暂停' : '正在逐页采集，请保持页面打开。';
-      else if (complete) status.textContent = '自营视频筛选完成，可以下载结果。';
-      else if (run?.phase === 'paused') status.textContent = run.error || '采集已暂停，进度已保留。';
-      else status.textContent = template ? '' : '请在视频明细列表查询一次，等待捕获请求。';
-
-      const matchCount = run?.matches.size ?? 0;
-      count.textContent = [
-        `已采集 ${numberFormat.format(run?.scanned ?? 0)} 条`,
-        `达标 ${numberFormat.format(matchCount)} 条`,
-        matchCount > previewLimit ? `预览前 ${previewLimit} 条` : '',
-      ].filter(Boolean).join(' ');
-      renderPreview(run);
-    }
-
-    function setPanelOpen(open) {
-      panel.hidden = !open;
-      openButton.hidden = open;
-      openButton.setAttribute('aria-expanded', String(open));
-      if (open) {
-        renderPanel();
-        (!start.hidden && !start.disabled ? start : closeButton).focus();
-      } else {
-        openButton.focus();
-      }
-    }
-
-    function applyDates(automatic = false) {
-      if (batch?.phase === 'running') return;
-      periodAutomatic = automatic === true;
-      const startDate = dateStart.value;
-      const endDate = dateEnd.value;
-      dateError = '';
-      if (!isDate(startDate) || !isDate(endDate) || startDate > endDate) {
-        dateError = '请选择有效的起止日期，结束日期须等于或晚于开始日期。';
-      } else {
-        const nextPeriod = { startDate, endDate };
-        if (!samePeriod(selectedPeriod, nextPeriod)) {
-          selectedPeriod = nextPeriod;
-          batch = undefined;
-        }
-      }
-      renderPanel();
-    }
-
-    openButton.addEventListener('click', () => setPanelOpen(true));
-    closeButton.addEventListener('click', () => setPanelOpen(false));
-    dateStart.addEventListener('input', () => applyDates());
-    dateEnd.addEventListener('input', () => applyDates());
-    month.addEventListener('click', () => {
-      const current = recentPageMonthPeriod(template?.sourcePeriod);
-      dateStart.value = current.startDate;
-      dateEnd.value = current.endDate;
-      applyDates(true);
+    const controller = videoCollectionLiquidUi.mount({
+      hostId: 'compass-self-video-collector',
+      config: {
+        title: '自营视频采集',
+        launcherLabel: '自营视频采集',
+        downloadLabel: '下载当前 CSV',
+        tableLabel: '符合筛选条件的自营视频',
+      },
+      initialPeriod: () => ({
+        startDate: selectedPeriod.startDate,
+        endDate: selectedPeriod.endDate,
+      }),
+      getView: panelView,
+      isVisible: onSelfVideoPage,
+      applyDates: applyPanelDates,
+      monthPeriod: () => recentPageMonthPeriod(template?.sourcePeriod),
+      start: startCollection,
+      pause: () => {
+        if (batch?.phase !== 'running') return;
+        batch.pauseRequested = true;
+        updatePanel();
+      },
+      download: () => {
+        if (batch?.phase === 'complete') downloadCsv(batch);
+      },
+      downloadCombined: () => videoCollectionWorkbook.downloadCombined(),
+      subscribe: (callback) => videoCollectionWorkbook.subscribe(callback),
+      unsubscribe: (listeners) => videoCollectionWorkbook.unsubscribe(listeners),
     });
-    panel.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape') setPanelOpen(false);
-    });
-    start.addEventListener('click', startCollection);
-    stop.addEventListener('click', () => {
-      if (batch?.phase !== 'running') return;
-      batch.pauseRequested = true;
-      renderPanel();
-    });
-    download.addEventListener('click', () => {
-      if (batch?.phase === 'complete') downloadCsv(batch);
-    });
-
-    document.body.append(host);
-    updatePanel = () => {
-      host.hidden = !onSelfVideoPage();
-      if (!host.hidden && !panel.hidden) renderPanel();
-    };
-    window.addEventListener('popstate', updatePanel);
-    window.navigation?.addEventListener('currententrychange', updatePanel);
-    updatePanel();
-    return () => {
-      if (onSelfVideoPage()) setPanelOpen(true);
-    };
+    updatePanel = controller.refresh;
+    controller.refresh();
+    return controller.open;
   }
-
   let openPanel;
   if (document.body) openPanel = mountPanel();
   else document.addEventListener('DOMContentLoaded', () => { openPanel = mountPanel(); }, { once: true });

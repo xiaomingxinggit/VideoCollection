@@ -2,3 +2,6 @@
 /qianchuan-material-*.json
 /qianchuan-material-*.csv
 /compass-self-video-*.csv
+/video-collection-summary-*.xlsx
+/.playwright-cli/
+/output/
