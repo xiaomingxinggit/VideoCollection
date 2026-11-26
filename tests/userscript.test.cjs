@@ -215,7 +215,7 @@ test('userscript pins Vue, Element Plus, and SheetJS with SUN and Dark themes', 
     'https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.mini.min.js#sha256-DLNT+DDXKIOFSSyD0newWN3qxmTKUc8Tk6of0+K3CTk=',
   ];
   for (const dependency of dependencies) assert.ok(userscriptSource.includes(dependency));
-  assert.match(userscriptSource, /@version\s+1\.6\.0/);
+  assert.match(userscriptSource, /@version\s+1\.6\.1/);
   const vueIndex = userscriptSource.indexOf(dependencies[0]);
   const vueBridgeIndex = userscriptSource.indexOf(vueBridge);
   const elementIndex = userscriptSource.indexOf(dependencies[1]);
@@ -250,6 +250,15 @@ test('shared panel removes the launcher logo and supports drag with edge snappin
   assert.deepEqual(fit({ x: 780, y: 680 }), { x: 788, y: 688 });
   assert.deepEqual(fit({ x: 400, y: 350 }), { x: 400, y: 350 });
   assert.deepEqual(fit({ x: 2000, y: -100 }), { x: 788, y: 12 });
+});
+
+test('launcher and expanded panel use the top-right default and only persist dragged positions', () => {
+  assert.match(userscriptSource, /\.vc-launcher,\s*\.vc-panel\s*\{[^}]*top: 20px;\s*right: 20px;/);
+  assert.match(userscriptSource, /\.vc-launcher,\s*\.vc-panel\s*\{ top: 12px; right: 12px; \}/);
+  assert.match(userscriptSource, /positionKeyPrefix = 'video-collection-liquid-position:v2'/);
+  assert.match(userscriptSource, /floatingStyle\(kind\) \{\s*const position = this\.positions\[kind\];\s*if \(!position\) return undefined;/);
+  assert.equal([...userscriptSource.matchAll(/storeFloatingPosition\(positionKeys\[/g)].length, 1);
+  assert.match(userscriptSource, /storeFloatingPosition\(positionKeys\[drag\.kind\], position\)/);
 });
 
 test('userscript bridges Vue into Element Plus without leaking page globals', () => {

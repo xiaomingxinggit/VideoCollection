@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         千川素材请求采集
 // @namespace    VideoCollection
-// @version      1.6.0
+// @version      1.6.1
 // @description  采集千川素材与抖店自营视频，支持单页 CSV 与双页 Excel 汇总导出。
 //
 // @match        https://qianchuan.jinritemai.com/dataV3/roi2-material-analysis*
@@ -292,7 +292,8 @@ const videoCollectionLiquidUi = (() => {
   'use strict';
 
   const themeKey = 'video-collection-liquid-theme';
-  const positionKeyPrefix = 'video-collection-liquid-position';
+  // Older installs also saved the automatic bottom-right coordinates.
+  const positionKeyPrefix = 'video-collection-liquid-position:v2';
   const edgeGap = 12;
   const snapDistance = 36;
   const liquidCss = `
@@ -364,8 +365,8 @@ const videoCollectionLiquidUi = (() => {
     .vc-panel {
       position: fixed;
       z-index: 2147483600;
-      inset-inline-end: 20px;
-      inset-block-end: 20px;
+      top: 20px;
+      right: 20px;
     }
 
     .vc-shell .vc-launcher.el-button {
@@ -826,7 +827,7 @@ const videoCollectionLiquidUi = (() => {
     }
 
     @media (max-width: 560px) {
-      .vc-launcher, .vc-panel { inset-inline-end: 12px; inset-block-end: 12px; }
+      .vc-launcher, .vc-panel { top: 12px; right: 12px; }
       .vc-panel { width: calc(100vw - 24px); max-height: calc(100dvh - 24px); border-radius: 24px; }
       .vc-panel-body { max-height: calc(100dvh - 86px); padding-inline: 13px; }
       .vc-header { padding-inline: 15px 11px; }
@@ -1161,8 +1162,9 @@ const videoCollectionLiquidUi = (() => {
     if (typeof Vue === 'undefined' || typeof ElementPlus === 'undefined') {
       const fallback = document.createElement('button');
       fallback.type = 'button';
+      fallback.className = 'vc-launcher';
       fallback.textContent = '采集面板资源加载失败，请刷新页面';
-      fallback.style.cssText = 'position:fixed;right:20px;bottom:20px;z-index:2147483600;padding:12px 16px;border:1px solid #ccd5e0;border-radius:16px;background:#fff;color:#1d293a;';
+      fallback.style.cssText = 'padding:12px 16px;border:1px solid #ccd5e0;border-radius:16px;background:#fff;color:#1d293a;';
       root.append(fallback);
       return {
         open: () => {},
@@ -1215,26 +1217,22 @@ const videoCollectionLiquidUi = (() => {
           const position = this.positions[kind];
           if (!position) return undefined;
           return {
-            insetInlineEnd: 'auto',
-            insetBlockEnd: 'auto',
+            right: 'auto',
             left: `${position.x}px`,
             top: `${position.y}px`,
           };
         },
-        normalizePosition(kind, threshold = snapDistance) {
+        normalizePosition(kind) {
+          const position = this.positions[kind];
           const element = this.floatingElement(kind);
-          if (!element) return;
-          const rect = element.getBoundingClientRect();
-          if (!rect.width || !rect.height) return;
-          const position = fitFloatingPosition(
-            this.positions[kind] ?? { x: rect.left, y: rect.top },
-            rect,
+          if (!position || !element?.offsetWidth || !element.offsetHeight) return;
+          this.positions[kind] = fitFloatingPosition(
+            position,
+            { width: element.offsetWidth, height: element.offsetHeight },
             { width: window.innerWidth, height: window.innerHeight },
             edgeGap,
-            threshold,
+            -1,
           );
-          this.positions[kind] = position;
-          storeFloatingPosition(positionKeys[kind], position);
         },
         startDrag(kind, event) {
           if (event.button !== 0 || event.isPrimary === false) return;
@@ -1312,8 +1310,8 @@ const videoCollectionLiquidUi = (() => {
           this.dragState = null;
         },
         handleViewportResize() {
-          if (this.positions.launcher) this.normalizePosition('launcher', -1);
-          if (this.panelOpen && this.positions.panel) this.normalizePosition('panel', -1);
+          this.normalizePosition('launcher');
+          if (this.panelOpen) this.normalizePosition('panel');
         },
         sync() {
           this.revision++;
@@ -1335,7 +1333,7 @@ const videoCollectionLiquidUi = (() => {
             const target = startButton && !startButton.disabled
               ? startButton
               : this.$refs.closeButton?.$el;
-            target?.focus();
+            target?.focus({ preventScroll: true });
           });
         },
         closePanel() {
