@@ -215,7 +215,6 @@ test('userscript pins Vue, Element Plus, and SheetJS with SUN and Dark themes', 
     'https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.mini.min.js#sha256-DLNT+DDXKIOFSSyD0newWN3qxmTKUc8Tk6of0+K3CTk=',
   ];
   for (const dependency of dependencies) assert.ok(userscriptSource.includes(dependency));
-  assert.match(userscriptSource, /@version\s+1\.6\.1/);
   const vueIndex = userscriptSource.indexOf(dependencies[0]);
   const vueBridgeIndex = userscriptSource.indexOf(vueBridge);
   const elementIndex = userscriptSource.indexOf(dependencies[1]);
@@ -230,6 +229,16 @@ test('userscript pins Vue, Element Plus, and SheetJS with SUN and Dark themes', 
   assert.match(userscriptSource, /\{ label: 'SUN', value: 'sun' \}/);
   assert.match(userscriptSource, /\{ label: 'Dark', value: 'dark' \}/);
   assert.doesNotMatch(userscriptSource, /function panelMarkup/);
+});
+
+test('userscript points to the same stable GitHub file for update checks and downloads', () => {
+  const metadata = userscriptSource.split('// ==/UserScript==', 1)[0];
+  const fields = new Map([...metadata.matchAll(/^\/\/ @(version|updateURL|downloadURL)\s+(\S+)$/gm)]
+    .map(([, name, value]) => [name, value]));
+  const scriptUrl = 'https://raw.githubusercontent.com/xiaomingxinggit/VideoCollection/main/qianchuan-material-collector.user.js';
+  assert.match(fields.get('version'), /^\d+\.\d+\.\d+$/);
+  assert.equal(fields.get('updateURL'), scriptUrl);
+  assert.equal(fields.get('downloadURL'), scriptUrl);
 });
 
 test('shared panel removes the launcher logo and supports drag with edge snapping', () => {
@@ -252,9 +261,14 @@ test('shared panel removes the launcher logo and supports drag with edge snappin
   assert.deepEqual(fit({ x: 2000, y: -100 }), { x: 788, y: 12 });
 });
 
-test('launcher and expanded panel use the top-right default and only persist dragged positions', () => {
-  assert.match(userscriptSource, /\.vc-launcher,\s*\.vc-panel\s*\{[^}]*top: 20px;\s*right: 20px;/);
-  assert.match(userscriptSource, /\.vc-launcher,\s*\.vc-panel\s*\{ top: 12px; right: 12px; \}/);
+test('floating controls use per-page defaults, fit short windows, and only persist dragged positions', () => {
+  assert.match(userscriptSource, /--vc-default-top: clamp\(\s*var\(--vc-floating-gap\),\s*var\(--vc-preferred-top, 200px\),\s*calc\(100dvh - var\(--vc-floating-gap\) - 220px\)\s*\);/);
+  assert.match(userscriptSource, /top: var\(--vc-default-top\);\s*right: var\(--vc-floating-gap\);/);
+  assert.match(userscriptSource, /max-height: min\(720px, calc\(100dvh - var\(--vc-default-top\) - var\(--vc-floating-gap\)\)\);/);
+  assert.match(userscriptSource, /\.vc-launcher,\s*\.vc-panel\s*\{ --vc-floating-gap: 12px; \}/);
+  assert.match(userscriptSource, /:style="\[\{ '--vc-preferred-top': config\.panelTop \}, floatingStyle\('panel'\)\]"/);
+  assert.match(userscriptSource, /launcherLabel: '素材采集',\s*panelTop: '250px',/);
+  assert.match(userscriptSource, /launcherLabel: '自营视频采集',\s*panelTop: '300px',/);
   assert.match(userscriptSource, /positionKeyPrefix = 'video-collection-liquid-position:v2'/);
   assert.match(userscriptSource, /floatingStyle\(kind\) \{\s*const position = this\.positions\[kind\];\s*if \(!position\) return undefined;/);
   assert.equal([...userscriptSource.matchAll(/storeFloatingPosition\(positionKeys\[/g)].length, 1);

@@ -1,8 +1,10 @@
 // ==UserScript==
 // @name         千川素材请求采集
 // @namespace    VideoCollection
-// @version      1.6.1
+// @version      1.6.2
 // @description  采集千川素材与抖店自营视频，支持单页 CSV 与双页 Excel 汇总导出。
+// @updateURL    https://raw.githubusercontent.com/xiaomingxinggit/VideoCollection/main/qianchuan-material-collector.user.js
+// @downloadURL  https://raw.githubusercontent.com/xiaomingxinggit/VideoCollection/main/qianchuan-material-collector.user.js
 //
 // @match        https://qianchuan.jinritemai.com/dataV3/roi2-material-analysis*
 // @match        https://compass.jinritemai.com/shop/video/self*
@@ -363,10 +365,16 @@ const videoCollectionLiquidUi = (() => {
 
     .vc-launcher,
     .vc-panel {
+      --vc-floating-gap: 20px;
+      --vc-default-top: clamp(
+        var(--vc-floating-gap),
+        var(--vc-preferred-top, 200px),
+        calc(100dvh - var(--vc-floating-gap) - 220px)
+      );
       position: fixed;
       z-index: 2147483600;
-      top: 20px;
-      right: 20px;
+      top: var(--vc-default-top);
+      right: var(--vc-floating-gap);
     }
 
     .vc-shell .vc-launcher.el-button {
@@ -398,8 +406,10 @@ const videoCollectionLiquidUi = (() => {
     }
 
     .vc-panel {
+      display: flex;
+      flex-direction: column;
       width: min(520px, calc(100vw - 40px));
-      max-height: min(720px, calc(100dvh - 40px));
+      max-height: min(720px, calc(100dvh - var(--vc-default-top) - var(--vc-floating-gap)));
       overflow: hidden;
       isolation: isolate;
       background:
@@ -447,6 +457,7 @@ const videoCollectionLiquidUi = (() => {
 
     .vc-header {
       display: flex;
+      flex: 0 0 auto;
       align-items: center;
       justify-content: space-between;
       gap: 14px;
@@ -530,7 +541,7 @@ const videoCollectionLiquidUi = (() => {
     .vc-panel-body {
       display: grid;
       gap: 12px;
-      max-height: calc(min(720px, 100dvh - 40px) - 62px);
+      min-height: 0;
       padding: 14px 18px 18px;
       overflow: auto;
       overscroll-behavior: contain;
@@ -827,9 +838,9 @@ const videoCollectionLiquidUi = (() => {
     }
 
     @media (max-width: 560px) {
-      .vc-launcher, .vc-panel { top: 12px; right: 12px; }
-      .vc-panel { width: calc(100vw - 24px); max-height: calc(100dvh - 24px); border-radius: 24px; }
-      .vc-panel-body { max-height: calc(100dvh - 86px); padding-inline: 13px; }
+      .vc-launcher, .vc-panel { --vc-floating-gap: 12px; }
+      .vc-panel { width: calc(100vw - 24px); border-radius: 24px; }
+      .vc-panel-body { padding-inline: 13px; }
       .vc-header { padding-inline: 15px 11px; }
       .vc-workbook-grid { grid-template-columns: 1fr; }
       .vc-shell .el-segmented__item { min-width: 42px; }
@@ -872,7 +883,7 @@ const videoCollectionLiquidUi = (() => {
           ref="panel"
           class="vc-panel"
           :class="{ 'is-dragging': dragKind === 'panel' }"
-          :style="floatingStyle('panel')"
+          :style="[{ '--vc-preferred-top': config.panelTop }, floatingStyle('panel')]"
           role="dialog"
           aria-modal="false"
           :aria-label="config.title"
@@ -2112,6 +2123,7 @@ const videoCollectionLiquidUi = (() => {
       config: {
         title: '素材采集',
         launcherLabel: '素材采集',
+        panelTop: '250px',
         downloadLabel: '下载当前 CSV',
         tableLabel: '符合筛选条件的素材',
       },
@@ -2706,6 +2718,7 @@ const videoCollectionLiquidUi = (() => {
       config: {
         title: '自营视频采集',
         launcherLabel: '自营视频采集',
+        panelTop: '300px',
         downloadLabel: '下载当前 CSV',
         tableLabel: '符合筛选条件的自营视频',
       },
