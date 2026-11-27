@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         千川素材请求采集
 // @namespace    VideoCollection
-// @version      1.7.0
+// @version      1.7.1
 // @description  采集千川素材与抖店自营视频，支持单页 CSV 与双页 Excel 汇总导出。
 // @updateURL    https://raw.githubusercontent.com/xiaomingxinggit/VideoCollection/main/qianchuan-material-collector.user.js
 // @downloadURL  https://raw.githubusercontent.com/xiaomingxinggit/VideoCollection/main/qianchuan-material-collector.user.js
@@ -289,15 +289,10 @@ const videoCollectionWorkbook = (() => {
     ];
   }
 
-  function buildWorkbook(state = summary()) {
-    if (!state.ready) throw new Error(state.message);
-    if (typeof XLSX === 'undefined' || !XLSX?.utils) {
-      throw new Error('Excel 组件未加载，请刷新页面后重试。');
-    }
-
+  function appendQianchuanSheets(workbook, rows) {
     const qianchuanRows = [
       ['推广类型', '素材 ID', '素材名称', '消耗（元）', '展现（次）'],
-      ...state.qianchuan.rows.map((row) => [
+      ...rows.map((row) => [
         row.promotionType,
         row.materialId,
         row.title,
@@ -305,27 +300,16 @@ const videoCollectionWorkbook = (() => {
         row.impressions,
       ]),
     ];
-    const compassRows = [
-      ['标题', '观看次数'],
-      ...state.compass.rows.map((row) => [row.title, row.watchCount]),
-    ];
-    const workbook = XLSX.utils.book_new();
     const qianchuanSheet = XLSX.utils.aoa_to_sheet(qianchuanRows);
     qianchuanSheet['!cols'] = [
       { wch: 12 }, { wch: 22 }, { wch: 48 }, { wch: 16 }, { wch: 16 },
     ];
     qianchuanSheet['!autofilter'] = { ref: qianchuanSheet['!ref'] || 'A1:E1' };
-    setNumberFormat(qianchuanSheet, 3, state.qianchuan.rows.length, '#,##0.00');
-    setNumberFormat(qianchuanSheet, 4, state.qianchuan.rows.length, '#,##0');
+    setNumberFormat(qianchuanSheet, 3, rows.length, '#,##0.00');
+    setNumberFormat(qianchuanSheet, 4, rows.length, '#,##0');
     XLSX.utils.book_append_sheet(workbook, qianchuanSheet, '千川素材');
 
-    const compassSheet = XLSX.utils.aoa_to_sheet(compassRows);
-    compassSheet['!cols'] = [{ wch: 58 }, { wch: 18 }];
-    compassSheet['!autofilter'] = { ref: compassSheet['!ref'] || 'A1:B1' };
-    setNumberFormat(compassSheet, 1, state.compass.rows.length, '#,##0');
-    XLSX.utils.book_append_sheet(workbook, compassSheet, '自营视频');
-
-    const groupRows = buildQianchuanGroupRows(state.qianchuan.rows);
+    const groupRows = buildQianchuanGroupRows(rows);
     const groupSheet = XLSX.utils.aoa_to_sheet(groupRows);
     groupSheet['!cols'] = [
       { wch: 18 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 16 },
@@ -337,6 +321,42 @@ const videoCollectionWorkbook = (() => {
     setNumberFormat(groupSheet, 4, groupRows.length - 1, '#,##0');
     setNumberFormat(groupSheet, 5, groupRows.length - 1, '#,##0');
     XLSX.utils.book_append_sheet(workbook, groupSheet, '千川分组汇总');
+  }
+
+  function buildQianchuanWorkbook(snapshot) {
+    if (typeof XLSX === 'undefined' || !XLSX?.utils) {
+      throw new Error('Excel 组件未加载，请刷新页面后重试。');
+    }
+    const workbook = XLSX.utils.book_new();
+    appendQianchuanSheets(workbook, snapshot.rows);
+    return workbook;
+  }
+
+  function downloadQianchuan(snapshot) {
+    const workbook = buildQianchuanWorkbook(snapshot);
+    const filename = `qianchuan-material-${snapshot.startDate}_${snapshot.endDate}.xlsx`;
+    XLSX.writeFileXLSX(workbook, filename, { compression: true });
+    return filename;
+  }
+
+  function buildWorkbook(state = summary()) {
+    if (!state.ready) throw new Error(state.message);
+    if (typeof XLSX === 'undefined' || !XLSX?.utils) {
+      throw new Error('Excel 组件未加载，请刷新页面后重试。');
+    }
+
+    const compassRows = [
+      ['标题', '观看次数'],
+      ...state.compass.rows.map((row) => [row.title, row.watchCount]),
+    ];
+    const workbook = XLSX.utils.book_new();
+    appendQianchuanSheets(workbook, state.qianchuan.rows);
+
+    const compassSheet = XLSX.utils.aoa_to_sheet(compassRows);
+    compassSheet['!cols'] = [{ wch: 58 }, { wch: 18 }];
+    compassSheet['!autofilter'] = { ref: compassSheet['!ref'] || 'A1:B1' };
+    setNumberFormat(compassSheet, 1, state.compass.rows.length, '#,##0');
+    XLSX.utils.book_append_sheet(workbook, compassSheet, '自营视频');
     return workbook;
   }
 
@@ -373,8 +393,9 @@ const videoCollectionWorkbook = (() => {
   }
 
   return {
-    begin, buildQianchuanGroupRows, buildWorkbook, downloadCombined, invalidate,
-    matchKaomojiGroup, read, save, storageKeys, subscribe, summary, unsubscribe,
+    begin, buildQianchuanGroupRows, buildQianchuanWorkbook, buildWorkbook, downloadCombined,
+    downloadQianchuan, invalidate, matchKaomojiGroup, read, save, storageKeys, subscribe,
+    summary, unsubscribe,
   };
 })();
 
@@ -1353,7 +1374,7 @@ const videoCollectionLiquidUi = (() => {
               :disabled="view.pauseDisabled"
               @click="pauseRun"
             >{{ view.pauseDisabled ? '正在暂停' : '暂停采集' }}</el-button>
-            <el-button :disabled="view.downloadDisabled" @click="download">导出 CSV</el-button>
+            <el-button :disabled="view.downloadDisabled" @click="download">{{ config.downloadLabel }}</el-button>
             <el-button
               :disabled="view.combinedDownloadDisabled"
               @click="downloadCombined"
@@ -2472,7 +2493,7 @@ const videoCollectionLiquidUi = (() => {
         title: '素材采集',
         launcherLabel: '素材采集',
         panelTop: '250px',
-        downloadLabel: '下载当前 CSV',
+        downloadLabel: '导出 Excel',
         tableLabel: '符合筛选条件的素材',
       },
       initialPeriod: () => ({
@@ -2496,7 +2517,9 @@ const videoCollectionLiquidUi = (() => {
         updatePanel();
       },
       download: () => {
-        if (batch?.account === currentPage() && batch.phase === 'complete') downloadCsv(batch);
+        if (batch?.account === currentPage() && batch.phase === 'complete') {
+          videoCollectionWorkbook.downloadQianchuan(workbookSnapshot(batch));
+        }
       },
       downloadCombined: () => videoCollectionWorkbook.downloadCombined(),
       subscribe: (callback) => videoCollectionWorkbook.subscribe(callback),

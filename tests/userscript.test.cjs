@@ -399,7 +399,7 @@ test('shared storage combines matching page snapshots into a two-sheet workbook'
   assert.equal(state.ready, true);
   assert.deepEqual(JSON.parse(JSON.stringify(state.items.map((item) => item.state))), ['done', 'done']);
   const result = workbook.module.buildWorkbook(state);
-  assert.deepEqual(result.SheetNames, ['千川素材', '自营视频', '千川分组汇总']);
+  assert.deepEqual(result.SheetNames, ['千川素材', '千川分组汇总', '自营视频']);
   assert.equal(result.Sheets['千川素材'].D2.v, 1234.56);
   assert.equal(result.Sheets['千川素材'].D2.t, 'n');
   assert.equal(result.Sheets['千川素材'].E2.v, 45678);
@@ -409,7 +409,7 @@ test('shared storage combines matching page snapshots into a two-sheet workbook'
   const filename = workbook.module.downloadCombined();
   assert.equal(filename, 'video-collection-summary-2026-11-01_2026-11-25.xlsx');
   assert.equal(workbook.downloads.length, 1);
-  assert.deepEqual(workbook.downloads[0].workbook.SheetNames, ['千川素材', '自营视频', '千川分组汇总']);
+  assert.deepEqual(workbook.downloads[0].workbook.SheetNames, ['千川素材', '千川分组汇总', '自营视频']);
   assert.deepEqual(JSON.parse(JSON.stringify(workbook.downloads[0].options)), { compression: true });
 });
 
@@ -731,4 +731,11 @@ test('Qianchuan kaomoji grouping accumulates live and product spend and impressi
   assert.deepEqual(otherRow, ['未归类', 1, 50, 10000, 0, 1]);
   const totalRow = grouped[grouped.length - 1];
   assert.deepEqual(totalRow, ['合计', 3, 350.75, 65000, 1, 2]);
+
+  const singleWorkbook = workbook.module.buildQianchuanWorkbook({
+    startDate: '2026-11-01',
+    endDate: '2026-11-25',
+    rows,
+  });
+  assert.deepEqual(singleWorkbook.SheetNames, ['千川素材', '千川分组汇总']);
 });
