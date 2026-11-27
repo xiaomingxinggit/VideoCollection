@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         千川素材请求采集
 // @namespace    VideoCollection
-// @version      1.7.2
+// @version      1.7.3
 // @description  采集千川素材与抖店自营视频，支持单页 CSV 与双页 Excel 汇总导出。
 // @updateURL    https://raw.githubusercontent.com/xiaomingxinggit/VideoCollection/main/qianchuan-material-collector.user.js
 // @downloadURL  https://raw.githubusercontent.com/xiaomingxinggit/VideoCollection/main/qianchuan-material-collector.user.js
@@ -438,22 +438,22 @@ const videoCollectionLiquidUi = (() => {
     [hidden] { display: none !important; }
 
     .vc-shell {
-      --vc-accent: #2563eb;
-      --vc-accent-strong: #1d4ed8;
-      --vc-accent-soft: rgb(37 99 235 / 12%);
-      --vc-glass: rgb(255 255 255 / 66%);
-      --vc-glass-strong: rgb(255 255 255 / 92%);
-      --vc-standard: rgb(255 255 255 / 84%);
-      --vc-control: rgb(241 245 249 / 82%);
-      --vc-control-hover: rgb(255 255 255 / 96%);
-      --vc-border: rgb(15 23 42 / 7%);
-      --vc-border-soft: rgb(15 23 42 / 7%);
-      --vc-text: #0f172a;
-      --vc-muted: #64748b;
+      --vc-accent: #007aff;
+      --vc-accent-strong: #0062d6;
+      --vc-accent-soft: rgb(0 122 255 / 14%);
+      --vc-glass: rgb(255 255 255 / 22%);
+      --vc-glass-strong: rgb(255 255 255 / 44%);
+      --vc-standard: rgb(255 255 255 / 24%);
+      --vc-control: rgb(15 23 42 / 4.5%);
+      --vc-control-hover: rgb(255 255 255 / 58%);
+      --vc-border: rgb(255 255 255 / 35%);
+      --vc-border-soft: rgb(15 23 42 / 6%);
+      --vc-text: #0b1120;
+      --vc-muted: #475569;
       --vc-warning: #92400e;
-      --vc-warning-bg: rgb(254 243 199 / 78%);
-      --vc-shadow: 0 24px 60px -12px rgb(15 23 42 / 18%), 0 4px 16px rgb(15 23 42 / 6%);
-      --vc-card-shadow: 0 2px 10px rgb(15 23 42 / 3.5%);
+      --vc-warning-bg: rgb(245 158 11 / 16%);
+      --vc-shadow: 0 30px 70px -12px rgb(15 23 42 / 20%), 0 4px 18px rgb(15 23 42 / 5%);
+      --vc-card-shadow: none;
       --el-color-primary: var(--vc-accent);
       --el-color-primary-dark-2: var(--vc-accent-strong);
       --el-text-color-primary: var(--vc-text);
@@ -463,31 +463,32 @@ const videoCollectionLiquidUi = (() => {
       --el-border-color-light: var(--vc-border-soft);
       --el-border-color-lighter: rgb(15 23 42 / 5%);
       --el-fill-color-blank: transparent;
-      --el-fill-color-light: rgb(241 245 249 / 70%);
+      --el-fill-color-light: rgb(15 23 42 / 5%);
       --el-bg-color: var(--vc-standard);
-      --el-bg-color-overlay: var(--vc-glass-strong);
+      --el-bg-color-overlay: rgb(255 255 255 / 88%);
       color: var(--vc-text);
       color-scheme: light;
       font-family: inherit;
     }
 
     .vc-shell.dark {
-      --vc-accent: #3b82f6;
-      --vc-accent-strong: #60a5fa;
-      --vc-accent-soft: rgb(59 130 246 / 18%);
-      --vc-glass: rgb(17 24 39 / 72%);
-      --vc-glass-strong: rgb(30 41 59 / 94%);
-      --vc-standard: rgb(30 41 59 / 82%);
-      --vc-control: rgb(15 23 42 / 68%);
-      --vc-control-hover: rgb(255 255 255 / 14%);
-      --vc-border: rgb(255 255 255 / 9%);
+      --vc-accent: #0a84ff;
+      --vc-accent-strong: #409cff;
+      --vc-accent-soft: rgb(10 132 255 / 22%);
+      --vc-glass: rgb(16 22 34 / 30%);
+      --vc-glass-strong: rgb(255 255 255 / 13%);
+      --vc-standard: rgb(255 255 255 / 5.5%);
+      --vc-control: rgb(0 0 0 / 20%);
+      --vc-control-hover: rgb(255 255 255 / 16%);
+      --vc-border: rgb(255 255 255 / 14%);
       --vc-border-soft: rgb(255 255 255 / 8%);
       --vc-text: #f8fafc;
-      --vc-muted: #94a3b8;
+      --vc-muted: #a1b0c5;
       --vc-warning: #fcd34d;
-      --vc-warning-bg: rgb(120 53 15 / 55%);
-      --vc-shadow: 0 28px 70px -10px rgb(0 0 0 / 55%), 0 2px 14px rgb(0 0 0 / 32%);
-      --vc-card-shadow: 0 4px 14px rgb(0 0 0 / 20%);
+      --vc-warning-bg: rgb(245 158 11 / 20%);
+      --vc-shadow: 0 32px 76px -10px rgb(0 0 0 / 58%), 0 4px 20px rgb(0 0 0 / 32%);
+      --vc-card-shadow: none;
+      --el-bg-color-overlay: rgb(22 29 44 / 92%);
       color-scheme: dark;
     }
 
@@ -506,21 +507,21 @@ const videoCollectionLiquidUi = (() => {
     }
 
     .vc-shell .vc-launcher.el-button {
-      min-height: 46px;
+      min-height: 44px;
       padding: 0 18px;
       color: var(--vc-text);
       background: var(--vc-glass);
-      border: 1px solid var(--vc-border);
+      border: 0.5px solid var(--vc-border);
       border-radius: 999px;
       box-shadow: var(--vc-shadow);
-      backdrop-filter: blur(28px) saturate(180%);
-      -webkit-backdrop-filter: blur(28px) saturate(180%);
+      backdrop-filter: blur(26px) saturate(210%) brightness(1.05);
+      -webkit-backdrop-filter: blur(26px) saturate(210%) brightness(1.05);
       font-weight: 700;
       letter-spacing: .01em;
       overflow: hidden;
       cursor: grab;
       touch-action: none;
-      transition: transform 120ms ease-out, box-shadow 220ms ease, background 220ms ease;
+      transition: transform 100ms ease-out, box-shadow 220ms ease, background 220ms ease;
     }
 
     .vc-shell .vc-launcher.el-button:hover {
@@ -536,16 +537,22 @@ const videoCollectionLiquidUi = (() => {
     .vc-panel {
       display: flex;
       flex-direction: column;
-      width: min(460px, calc(100vw - 40px));
+      width: min(440px, calc(100vw - 40px));
       max-height: min(720px, calc(100dvh - var(--vc-default-top) - var(--vc-floating-gap)));
       overflow: hidden;
       isolation: isolate;
       background: var(--vc-glass);
-      border: 1px solid var(--vc-border);
-      border-radius: 26px;
+      border: 0.5px solid var(--vc-border);
+      border-radius: 28px;
       box-shadow: var(--vc-shadow);
-      backdrop-filter: blur(28px) saturate(180%);
-      -webkit-backdrop-filter: blur(28px) saturate(180%);
+      backdrop-filter: blur(28px) saturate(210%) brightness(1.05);
+      -webkit-backdrop-filter: blur(28px) saturate(210%) brightness(1.05);
+    }
+
+    .vc-shell.dark .vc-panel,
+    .vc-shell.dark .vc-launcher.el-button {
+      backdrop-filter: blur(28px) saturate(200%);
+      -webkit-backdrop-filter: blur(28px) saturate(200%);
     }
 
     .vc-refraction {
@@ -661,13 +668,15 @@ const videoCollectionLiquidUi = (() => {
     .vc-panel-body {
       display: flex;
       flex-direction: column;
-      gap: 11px;
+      gap: 10px;
       min-height: 0;
       padding: 6px 16px 12px;
       overflow: auto;
       overscroll-behavior: contain;
       scrollbar-width: thin;
       scrollbar-color: var(--vc-border-soft) transparent;
+      -webkit-mask-image: linear-gradient(to bottom, transparent 0, black 8px, black calc(100% - 10px), transparent 100%);
+      mask-image: linear-gradient(to bottom, transparent 0, black 8px, black calc(100% - 10px), transparent 100%);
     }
 
     .vc-panel-body > * { flex-shrink: 0; }
@@ -677,39 +686,37 @@ const videoCollectionLiquidUi = (() => {
       display: flex;
       align-items: flex-start;
       gap: 10px;
-      padding: 11px 14px;
-      border: 1px solid var(--vc-border-soft);
-      border-radius: 16px;
-      box-shadow: var(--vc-card-shadow);
+      padding: 11px 13px;
+      border-radius: 18px;
       transition: background 0.2s ease, color 0.2s ease;
     }
 
     .vc-banner.waiting {
-      background: rgb(254 243 199 / 68%);
+      background: rgb(245 158 11 / 16%);
       color: #92400e;
     }
     .dark .vc-banner.waiting {
-      background: rgb(245 158 11 / 16%);
+      background: rgb(245 158 11 / 20%);
       color: #fcd34d;
     }
 
     .vc-banner.ready,
     .vc-banner.done {
-      background: rgb(209 250 229 / 68%);
+      background: rgb(16 185 129 / 16%);
       color: #065f46;
     }
     .dark .vc-banner.ready,
     .dark .vc-banner.done {
-      background: rgb(16 185 129 / 18%);
+      background: rgb(16 185 129 / 20%);
       color: #6ee7b7;
     }
 
     .vc-banner.collecting {
-      background: rgb(219 234 254 / 75%);
-      color: #1e40af;
+      background: rgb(0 122 255 / 16%);
+      color: #0051b3;
     }
     .dark .vc-banner.collecting {
-      background: rgb(59 130 246 / 22%);
+      background: rgb(10 132 255 / 22%);
       color: #93c5fd;
     }
 
