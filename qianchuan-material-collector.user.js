@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         千川素材请求采集
 // @namespace    VideoCollection
-// @version      1.6.2
+// @version      1.6.3
 // @description  采集千川素材与抖店自营视频，支持单页 CSV 与双页 Excel 汇总导出。
 // @updateURL    https://raw.githubusercontent.com/xiaomingxinggit/VideoCollection/main/qianchuan-material-collector.user.js
 // @downloadURL  https://raw.githubusercontent.com/xiaomingxinggit/VideoCollection/main/qianchuan-material-collector.user.js
@@ -2170,6 +2170,7 @@ const videoCollectionLiquidUi = (() => {
   const origin = 'https://compass.jinritemai.com';
   const pagePath = '/shop/video/self';
   const listPath = '/compass_api/shop/video/overview/video_list';
+  const pageWindow = typeof unsafeWindow === 'object' && unsafeWindow ? unsafeWindow : window;
   const minWatchCount = 20000;
   const maxPages = 500;
   const pageDelayMs = 300;
@@ -2246,11 +2247,6 @@ const videoCollectionLiquidUi = (() => {
   let updatePanel = () => {};
   const requests = new WeakMap();
   const replayRequests = new WeakSet();
-  const Xhr = window.XMLHttpRequest;
-  const xhrPrototype = Xhr.prototype;
-  const xhrOpen = xhrPrototype.open;
-  const xhrSetHeader = xhrPrototype.setRequestHeader;
-  const xhrSend = xhrPrototype.send;
 
   function matchEndpoint(method, input) {
     if (String(method).toUpperCase() !== 'GET') return null;
@@ -2314,7 +2310,7 @@ const videoCollectionLiquidUi = (() => {
 
   function replayXhr(source, pageNo, period, signal) {
     return new Promise((resolve, reject) => {
-      const xhr = new window.XMLHttpRequest();
+      const xhr = new pageWindow.XMLHttpRequest();
       replayRequests.add(xhr);
       let settled = false;
       const abort = () => xhr.abort();
@@ -2380,44 +2376,84 @@ const videoCollectionLiquidUi = (() => {
     updatePanel();
   }
 
-  xhrPrototype.open = function open(method, input) {
-    const result = xhrOpen.apply(this, arguments);
-    requests.delete(this);
-    if (replayRequests.has(this)) return result;
+  function observeOpen(xhr, open, args) {
+    const result = open.apply(xhr, args);
+    requests.delete(xhr);
     try {
-      const url = onSelfVideoPage() ? matchEndpoint(method, input) : null;
-      if (url) requests.set(this, { url, headers: [] });
+      const url = onSelfVideoPage() ? matchEndpoint(args[0], args[1]) : null;
+      if (url) requests.set(xhr, { url, headers: [] });
     } catch {
       // Leave invalid requests to the page's original transport.
     }
     return result;
-  };
+  }
 
-  xhrPrototype.setRequestHeader = function setRequestHeader(name, value) {
-    const result = xhrSetHeader.apply(this, arguments);
-    const request = requests.get(this);
+  function observeSetHeader(xhr, setRequestHeader, args) {
+    const result = setRequestHeader.apply(xhr, args);
+    const request = requests.get(xhr);
+    const [name, value] = args;
     if (request && !/^cookie2?$/i.test(name)) request.headers.push([String(name), String(value)]);
     return result;
-  };
+  }
 
-  xhrPrototype.send = function send(body) {
-    const request = requests.get(this);
+  function observeSend(xhr, send, args) {
+    const request = requests.get(xhr);
+    requests.delete(xhr);
     let listener;
     if (request && onSelfVideoPage()) {
       request.sequence = nextSequence++;
-      const candidate = readTemplate(request, body, this.withCredentials);
+      const candidate = readTemplate(request, args[0], xhr.withCredentials);
       if (candidate) {
-        listener = () => saveTemplate(candidate, readXhr(this));
-        this.addEventListener('loadend', listener, { once: true });
+        listener = () => saveTemplate(candidate, readXhr(xhr));
+        xhr.addEventListener('loadend', listener, { once: true });
       }
     }
     try {
-      return xhrSend.apply(this, arguments);
+      return send.apply(xhr, args);
     } catch (error) {
-      if (listener) this.removeEventListener('loadend', listener);
+      if (listener) xhr.removeEventListener('loadend', listener);
       throw error;
     }
-  };
+  }
+
+  const xhrObservers = [
+    ['open', observeOpen, new WeakSet()],
+    ['setRequestHeader', observeSetHeader, new WeakSet()],
+    ['send', observeSend, new WeakSet()],
+  ];
+  const captureHooks = new WeakSet();
+
+  function installCapture() {
+    if (!onSelfVideoPage()) return;
+    try {
+      const prototype = pageWindow.XMLHttpRequest?.prototype;
+      if (!prototype) return;
+      for (const [method, observe, active] of xhrObservers) {
+        const current = prototype[method];
+        if (typeof current !== 'function' || captureHooks.has(current)) continue;
+        const hook = function (...args) {
+          if (replayRequests.has(this) || active.has(this)) return current.apply(this, args);
+          active.add(this);
+          try {
+            return observe(this, current, args);
+          } finally {
+            active.delete(this);
+          }
+        };
+        captureHooks.add(hook);
+        prototype[method] = hook;
+      }
+    } catch {
+      // The page can initialize its transport later. Try again at the next interaction.
+    }
+  }
+
+  installCapture();
+  document.addEventListener('DOMContentLoaded', installCapture, { once: true });
+  // The active XHR methods may change while the page initializes. Recheck before native queries.
+  for (const event of ['pointerdown', 'keydown', 'click']) {
+    document.addEventListener(event, installCapture, true);
+  }
 
   function readPage(result) {
     if (!succeeded(result)) {

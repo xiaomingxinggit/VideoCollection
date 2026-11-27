@@ -60,7 +60,7 @@ function loadQianchuanModule() {
   return sandbox.__qianchuanTest;
 }
 
-function loadCompassModule() {
+function loadCompassModule({ pageWindow, document = { body: null, addEventListener() {} } } = {}) {
   const source = userscriptSource;
   const closing = source.lastIndexOf('\n})();');
   assert.notEqual(closing, -1, 'Compass IIFE closing marker must exist');
@@ -69,6 +69,7 @@ function loadCompassModule() {
       addPage,
       csvText,
       currentMonthPeriod,
+      capturedTemplate: () => template,
       readPage,
       recentPageMonthPeriod,
       replayUrl,
@@ -89,7 +90,7 @@ function loadCompassModule() {
     WeakSet,
     clearTimeout,
     console,
-    document: { body: null, addEventListener() {} },
+    document,
     GM_registerMenuCommand() {},
     location: {
       href: 'https://compass.jinritemai.com/shop/video/self',
@@ -98,9 +99,10 @@ function loadCompassModule() {
       search: '',
     },
     setTimeout,
+    unsafeWindow: pageWindow,
   };
   sandbox.window = sandbox;
-  sandbox.XMLHttpRequest = FakeXhr;
+  sandbox.XMLHttpRequest = class extends FakeXhr {};
   vm.createContext(sandbox);
   vm.runInContext(instrumented, sandbox, { filename: userscriptPath });
   return sandbox.__compassTest;
@@ -584,6 +586,72 @@ test('Compass response parser reads the HAR table contract', () => {
   assert.equal(item.id, 'v1');
   assert.equal(item.title, '测试视频');
   assert.equal(item.watchCount, 45678);
+});
+
+class CompassListXhr extends EventTarget {
+  status = 200;
+  responseType = 'json';
+  response = {
+    st: 0,
+    data: { module_data: { core_data_0: { compass_general_table_value: { data: [] } } } },
+  };
+
+  open() {}
+  setRequestHeader() {}
+  send() { this.dispatchEvent(new Event('loadend')); }
+}
+
+function queryCompassList(Xhr, endpoint = 'video_list') {
+  const xhr = new Xhr();
+  const query = new URLSearchParams({
+    begin_date: '2026/11/01 00:00:00', end_date: '2026/11/25 00:00:00', page_no: '1', page_size: '10',
+  });
+  xhr.open('GET', `/compass_api/shop/video/overview/${endpoint}?${query}`, true);
+  xhr.setRequestHeader('X-Example', 'unchanged');
+  xhr.setRequestHeader('Cookie', 'ignored');
+  xhr.send();
+}
+
+test('Compass captures only the real page XHR video list', () => {
+  const pageWindow = { XMLHttpRequest: class extends CompassListXhr {} };
+  const collector = loadCompassModule({ pageWindow });
+  queryCompassList(pageWindow.XMLHttpRequest, 'unrelated');
+  assert.equal(collector.capturedTemplate(), undefined);
+
+  queryCompassList(pageWindow.XMLHttpRequest);
+  const captured = collector.capturedTemplate();
+  assert.equal(captured.sequence, 1);
+  assert.equal(captured.source.pathname, '/compass_api/shop/video/overview/video_list');
+  assert.equal(JSON.stringify(captured.headers), '[["X-Example","unchanged"]]');
+});
+
+test('Compass reattaches before query interactions and captures nested XHR wrappers once', () => {
+  const pageWindow = { XMLHttpRequest: class extends CompassListXhr {} };
+  const document = new EventTarget();
+  const collector = loadCompassModule({ pageWindow, document });
+  const prototype = pageWindow.XMLHttpRequest.prototype;
+  const calls = { open: 0, setRequestHeader: 0, send: 0 };
+  for (const method of Object.keys(calls)) {
+    const previous = prototype[method];
+    prototype[method] = function (...args) {
+      calls[method]++;
+      return previous.apply(this, args);
+    };
+  }
+
+  document.dispatchEvent(new Event('pointerdown'));
+  const attachedSend = prototype.send;
+  document.dispatchEvent(new Event('click'));
+  assert.equal(prototype.send, attachedSend);
+  queryCompassList(pageWindow.XMLHttpRequest);
+  assert.deepEqual(calls, { open: 1, setRequestHeader: 2, send: 1 });
+  assert.equal(collector.capturedTemplate().sequence, 1);
+  assert.equal(JSON.stringify(collector.capturedTemplate().headers), '[["X-Example","unchanged"]]');
+
+  pageWindow.XMLHttpRequest = class extends CompassListXhr {};
+  document.dispatchEvent(new Event('keydown'));
+  queryCompassList(pageWindow.XMLHttpRequest);
+  assert.equal(collector.capturedTemplate().sequence, 2);
 });
 
 test('20,000 is excluded and stops a valid descending scan', () => {
