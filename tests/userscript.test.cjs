@@ -123,11 +123,13 @@ function loadSharedUiModule() {
 }
 
 function loadWorkbookModule() {
+  const enumOpening = userscriptSource.indexOf('const KAOMOJI_ENUM = Object.freeze([');
   const opening = userscriptSource.indexOf('const videoCollectionWorkbook = (() => {');
   const closing = userscriptSource.indexOf('\n})();', opening);
+  assert.notEqual(enumOpening, -1, 'KAOMOJI_ENUM opening marker must exist');
   assert.notEqual(opening, -1, 'Workbook IIFE opening marker must exist');
   assert.notEqual(closing, -1, 'Workbook IIFE closing marker must exist');
-  const source = userscriptSource.slice(opening, closing + '\n})();'.length);
+  const source = userscriptSource.slice(enumOpening, closing + '\n})();'.length);
   const store = new Map();
   const downloads = [];
   const listeners = new Map();
@@ -397,7 +399,7 @@ test('shared storage combines matching page snapshots into a two-sheet workbook'
   assert.equal(state.ready, true);
   assert.deepEqual(JSON.parse(JSON.stringify(state.items.map((item) => item.state))), ['done', 'done']);
   const result = workbook.module.buildWorkbook(state);
-  assert.deepEqual(result.SheetNames, ['千川素材', '自营视频']);
+  assert.deepEqual(result.SheetNames, ['千川素材', '自营视频', '千川分组汇总']);
   assert.equal(result.Sheets['千川素材'].D2.v, 1234.56);
   assert.equal(result.Sheets['千川素材'].D2.t, 'n');
   assert.equal(result.Sheets['千川素材'].E2.v, 45678);
@@ -407,7 +409,7 @@ test('shared storage combines matching page snapshots into a two-sheet workbook'
   const filename = workbook.module.downloadCombined();
   assert.equal(filename, 'video-collection-summary-2026-11-01_2026-11-25.xlsx');
   assert.equal(workbook.downloads.length, 1);
-  assert.deepEqual(workbook.downloads[0].workbook.SheetNames, ['千川素材', '自营视频']);
+  assert.deepEqual(workbook.downloads[0].workbook.SheetNames, ['千川素材', '自营视频', '千川分组汇总']);
   assert.deepEqual(JSON.parse(JSON.stringify(workbook.downloads[0].options)), { compression: true });
 });
 
@@ -711,4 +713,22 @@ test('Compass CSV has only title and watch-count columns', () => {
   assert.equal(lines[1], '"普通标题","40002"');
   assert.equal(lines[2], '"\'=公式标题","30001"');
   assert.ok(lines.every((line) => (line.match(/","/g) ?? []).length === 1));
+});
+
+test('Qianchuan kaomoji grouping accumulates live and product spend and impressions', () => {
+  const rows = [
+    { promotionType: '推直播间', title: '测试标题一 ww #标签', spendYuan: 100.5, impressions: 25000 },
+    { promotionType: '推商品', title: '测试标题二 ww #其他', spendYuan: 200.25, impressions: 30000 },
+    { promotionType: '推商品', title: '普通无记号标题 #标签', spendYuan: 50, impressions: 10000 },
+  ];
+  const grouped = JSON.parse(JSON.stringify(workbook.module.buildQianchuanGroupRows(rows)));
+  assert.deepEqual(grouped[0], [
+    '颜文字记号', '素材合计（条）', '消耗（元）', '展现（次）', '推直播间（条）', '推商品（条）',
+  ]);
+  const wwRow = grouped.find((r) => r[0] === 'ww');
+  assert.deepEqual(wwRow, ['ww', 2, 300.75, 55000, 1, 1]);
+  const otherRow = grouped.find((r) => r[0] === '未归类');
+  assert.deepEqual(otherRow, ['未归类', 1, 50, 10000, 0, 1]);
+  const totalRow = grouped[grouped.length - 1];
+  assert.deepEqual(totalRow, ['合计', 3, 350.75, 65000, 1, 2]);
 });

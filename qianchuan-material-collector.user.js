@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         千川素材请求采集
 // @namespace    VideoCollection
-// @version      1.6.9
+// @version      1.7.0
 // @description  采集千川素材与抖店自营视频，支持单页 CSV 与双页 Excel 汇总导出。
 // @updateURL    https://raw.githubusercontent.com/xiaomingxinggit/VideoCollection/main/qianchuan-material-collector.user.js
 // @downloadURL  https://raw.githubusercontent.com/xiaomingxinggit/VideoCollection/main/qianchuan-material-collector.user.js
@@ -29,6 +29,19 @@
 // @grant        GM_removeValueChangeListener
 // @grant        unsafeWindow
 // ==/UserScript==
+
+// Global kaomoji enum reserved for creator classification and future metadata mapping.
+const KAOMOJI_ENUM = Object.freeze([
+  Object.freeze({ key: '++', label: '++ / ＋＋', pattern: /\+\+|＋＋/, meta: Object.freeze({}) }),
+  Object.freeze({ key: '^w^', label: '^w^', pattern: /\^w\^/i, meta: Object.freeze({}) }),
+  Object.freeze({ key: 'ww', label: 'ww', pattern: /ww(?=\s*#|$)/i, meta: Object.freeze({}) }),
+  Object.freeze({ key: '^^', label: '^^', pattern: /\^\^/, meta: Object.freeze({}) }),
+  Object.freeze({ key: "⸝⸝'ᜊ'⸝⸝", label: "⸝⸝'ᜊ'⸝⸝", pattern: /⸝⸝['’]?ᜊ['’]?⸝⸝/, meta: Object.freeze({}) }),
+  Object.freeze({ key: 'kk', label: 'kk', pattern: /kk(?=\s*#|$)/i, meta: Object.freeze({}) }),
+  Object.freeze({ key: '<3', label: '<3 / < 3', pattern: /<\s*3/, meta: Object.freeze({}) }),
+  Object.freeze({ key: '๑>ᴗO๑', label: '๑>ᴗO๑', pattern: /๑>ᴗO๑/i, meta: Object.freeze({}) }),
+  Object.freeze({ key: '⁃ ⩊ ⁃', label: '⁃ ⩊ ⁃', pattern: /⁃\s*⩊\s*⁃/, meta: Object.freeze({}) }),
+]);
 
 const videoCollectionWorkbook = (() => {
   'use strict';
@@ -214,6 +227,68 @@ const videoCollectionWorkbook = (() => {
     }
   }
 
+  function matchKaomojiGroup(title) {
+    const head = String(title || '').split('#')[0].trim();
+    for (const item of KAOMOJI_ENUM) {
+      if (item.pattern.test(head)) return item.label;
+    }
+    return '未归类';
+  }
+
+  function buildQianchuanGroupRows(rows) {
+    const buckets = new Map();
+    for (const item of KAOMOJI_ENUM) {
+      buckets.set(item.label, {
+        label: item.label, totalCount: 0, spendCents: 0, impressions: 0, liveCount: 0, productCount: 0,
+      });
+    }
+    const fallback = {
+      label: '未归类', totalCount: 0, spendCents: 0, impressions: 0, liveCount: 0, productCount: 0,
+    };
+
+    for (const row of rows) {
+      const label = matchKaomojiGroup(row.title);
+      const target = buckets.get(label) ?? fallback;
+      target.totalCount += 1;
+      target.spendCents += Math.round((Number(row.spendYuan) || 0) * 100);
+      target.impressions += Number(row.impressions) || 0;
+      if (row.promotionType === '推直播间') target.liveCount += 1;
+      else if (row.promotionType === '推商品') target.productCount += 1;
+    }
+
+    const ordered = [...buckets.values()]
+      .sort((a, b) => b.spendCents - a.spendCents || b.impressions - a.impressions);
+    ordered.push(fallback);
+
+    const totals = ordered.reduce((acc, item) => ({
+      totalCount: acc.totalCount + item.totalCount,
+      spendCents: acc.spendCents + item.spendCents,
+      impressions: acc.impressions + item.impressions,
+      liveCount: acc.liveCount + item.liveCount,
+      productCount: acc.productCount + item.productCount,
+    }), { totalCount: 0, spendCents: 0, impressions: 0, liveCount: 0, productCount: 0 });
+
+    return [
+      ['颜文字记号', '素材合计（条）', '消耗（元）', '展现（次）', '推直播间（条）', '推商品（条）'],
+      ...ordered.map((item) => [
+        item.label,
+        item.totalCount,
+        Number((item.spendCents / 100).toFixed(2)),
+        item.impressions,
+        item.liveCount,
+        item.productCount,
+      ]),
+      [
+        '合计',
+        totals.totalCount,
+        Number((totals.spendCents / 100).toFixed(2)),
+        totals.impressions,
+        totals.liveCount,
+        totals.productCount,
+      ],
+    ];
+  }
+
   function buildWorkbook(state = summary()) {
     if (!state.ready) throw new Error(state.message);
     if (typeof XLSX === 'undefined' || !XLSX?.utils) {
@@ -249,6 +324,19 @@ const videoCollectionWorkbook = (() => {
     compassSheet['!autofilter'] = { ref: compassSheet['!ref'] || 'A1:B1' };
     setNumberFormat(compassSheet, 1, state.compass.rows.length, '#,##0');
     XLSX.utils.book_append_sheet(workbook, compassSheet, '自营视频');
+
+    const groupRows = buildQianchuanGroupRows(state.qianchuan.rows);
+    const groupSheet = XLSX.utils.aoa_to_sheet(groupRows);
+    groupSheet['!cols'] = [
+      { wch: 18 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 16 },
+    ];
+    groupSheet['!autofilter'] = { ref: groupSheet['!ref'] || 'A1:F1' };
+    setNumberFormat(groupSheet, 1, groupRows.length - 1, '#,##0');
+    setNumberFormat(groupSheet, 2, groupRows.length - 1, '#,##0.00');
+    setNumberFormat(groupSheet, 3, groupRows.length - 1, '#,##0');
+    setNumberFormat(groupSheet, 4, groupRows.length - 1, '#,##0');
+    setNumberFormat(groupSheet, 5, groupRows.length - 1, '#,##0');
+    XLSX.utils.book_append_sheet(workbook, groupSheet, '千川分组汇总');
     return workbook;
   }
 
@@ -285,8 +373,8 @@ const videoCollectionWorkbook = (() => {
   }
 
   return {
-    begin, buildWorkbook, downloadCombined, invalidate, read, save, storageKeys,
-    subscribe, summary, unsubscribe,
+    begin, buildQianchuanGroupRows, buildWorkbook, downloadCombined, invalidate,
+    matchKaomojiGroup, read, save, storageKeys, subscribe, summary, unsubscribe,
   };
 })();
 
