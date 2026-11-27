@@ -228,8 +228,8 @@ test('userscript pins Vue, Element Plus, and SheetJS with SUN and Dark themes', 
   assert.match(userscriptSource, /scope="col"/);
   assert.match(userscriptSource, /startButton && !startButton\.disabled/);
   assert.match(userscriptSource, /GM_getValue\(themeKey, 'sun'\)/);
-  assert.match(userscriptSource, /\{ label: 'SUN', value: 'sun' \}/);
-  assert.match(userscriptSource, /\{ label: 'Dark', value: 'dark' \}/);
+  assert.match(userscriptSource, /\{ label: '☀️ 浅色', value: 'sun' \}/);
+  assert.match(userscriptSource, /\{ label: '🌙 深色', value: 'dark' \}/);
   assert.doesNotMatch(userscriptSource, /function panelMarkup/);
 });
 
@@ -248,7 +248,7 @@ test('shared panel removes the launcher logo and supports drag with edge snappin
   assert.match(userscriptSource, /@pointerdown="startDrag\('launcher', \$event\)"/);
   assert.match(userscriptSource, /<header class="vc-header" @pointerdown="startDrag\('panel', \$event\)">/);
   assert.match(userscriptSource, /video-collection-liquid-position/);
-  assert.match(userscriptSource, />下载总 Excel<\/el-button>/);
+  assert.match(userscriptSource, />总 Excel<\/el-button>/);
   assert.match(userscriptSource, /v-for="item in view\.workbookItems"/);
   assert.match(userscriptSource, /options\.subscribe\?\.\(\(\) => this\.sync\(\)\)/);
 

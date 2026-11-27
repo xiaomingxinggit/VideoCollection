@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         千川素材请求采集
 // @namespace    VideoCollection
-// @version      1.6.4
+// @version      1.6.5
 // @description  采集千川素材与抖店自营视频，支持单页 CSV 与双页 Excel 汇总导出。
 // @updateURL    https://raw.githubusercontent.com/xiaomingxinggit/VideoCollection/main/qianchuan-material-collector.user.js
 // @downloadURL  https://raw.githubusercontent.com/xiaomingxinggit/VideoCollection/main/qianchuan-material-collector.user.js
@@ -531,49 +531,159 @@ const videoCollectionLiquidUi = (() => {
     }
 
     .vc-panel-body {
-      display: grid;
+      display: flex;
+      flex-direction: column;
       gap: 11px;
       min-height: 0;
-      padding: 8px 16px 16px;
+      padding: 6px 16px 12px;
       overflow: auto;
       overscroll-behavior: contain;
       scrollbar-width: thin;
       scrollbar-color: var(--vc-border-soft) transparent;
     }
 
-    .vc-period-card,
-    .vc-content-card {
+    .vc-panel-body > * { flex-shrink: 0; }
+
+    /* Merged Status Banner */
+    .vc-banner {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 11px 14px;
+      border: 1px solid var(--vc-border-soft);
+      border-radius: 16px;
+      box-shadow: var(--vc-card-shadow);
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+
+    .vc-banner.waiting {
+      background: rgb(254 243 199 / 68%);
+      color: #92400e;
+    }
+    .dark .vc-banner.waiting {
+      background: rgb(245 158 11 / 16%);
+      color: #fcd34d;
+    }
+
+    .vc-banner.ready,
+    .vc-banner.done {
+      background: rgb(209 250 229 / 68%);
+      color: #065f46;
+    }
+    .dark .vc-banner.ready,
+    .dark .vc-banner.done {
+      background: rgb(16 185 129 / 18%);
+      color: #6ee7b7;
+    }
+
+    .vc-banner.collecting {
+      background: rgb(219 234 254 / 75%);
+      color: #1e40af;
+    }
+    .dark .vc-banner.collecting {
+      background: rgb(59 130 246 / 22%);
+      color: #93c5fd;
+    }
+
+    .vc-banner-dot {
+      position: relative;
+      flex-shrink: 0;
+      width: 8px;
+      height: 8px;
+      margin-top: 5px;
+      background: currentColor;
+      border-radius: 50%;
+    }
+
+    .vc-banner.waiting .vc-banner-dot::after,
+    .vc-banner.collecting .vc-banner-dot::after {
+      content: "";
+      position: absolute;
+      inset: -3px;
+      border: 1.5px solid currentColor;
+      border-radius: 50%;
+      opacity: .55;
+      animation: vc-ping 1.6s cubic-bezier(0, 0, .2, 1) infinite;
+    }
+
+    @keyframes vc-ping {
+      75%, 100% { transform: scale(1.85); opacity: 0; }
+    }
+
+    .vc-banner-copy { min-width: 0; }
+    .vc-banner-title { font-size: 13px; font-weight: 700; line-height: 1.35; }
+    .vc-banner-desc {
+      margin-top: 2px;
+      font-size: 11.5px;
+      letter-spacing: .01em;
+      line-height: 1.4;
+      opacity: .9;
+      overflow-wrap: anywhere;
+    }
+
+    /* Inner Card */
+    .vc-card {
       background: var(--vc-standard);
       border: 1px solid var(--vc-border-soft);
       border-radius: 18px;
+      padding: 12px 14px;
       box-shadow: var(--vc-card-shadow);
     }
 
-    .vc-period-card { padding: 12px 14px; }
-
-    .vc-period-head {
+    .vc-card-head {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
+      gap: 8px;
       margin-bottom: 10px;
     }
 
-    .vc-section-label {
-      display: block;
-      margin-bottom: 2px;
+    .vc-card-title {
       color: var(--vc-muted);
-      font-size: 11.5px;
+      font-size: 12.5px;
       font-weight: 600;
-      letter-spacing: .01em;
     }
 
-    .vc-period-value {
-      color: var(--vc-text);
-      font-size: 13.5px;
-      font-variant-numeric: tabular-nums;
-      font-weight: 700;
+    .vc-card-hint {
+      color: var(--vc-muted);
+      font-size: 11.5px;
+      letter-spacing: .01em;
+      text-align: right;
     }
+
+    .vc-preset-pills {
+      display: flex;
+      gap: 5px;
+    }
+
+    .vc-preset-pill {
+      padding: 4px 11px;
+      color: var(--vc-muted);
+      background: var(--vc-control);
+      border: 1px solid transparent;
+      border-radius: 999px;
+      font-family: inherit;
+      font-size: 11.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 100ms ease-out, background 160ms ease, color 160ms ease;
+    }
+
+    .vc-preset-pill:hover:not(:disabled) {
+      color: var(--vc-text);
+      background: var(--vc-glass-strong);
+    }
+
+    .vc-preset-pill:active:not(:disabled) { transform: scale(.96); }
+
+    .vc-preset-pill.active {
+      color: var(--vc-accent);
+      background: var(--vc-glass-strong);
+      border-color: var(--vc-border-soft);
+      box-shadow: 0 1px 4px rgb(37 99 235 / 12%);
+    }
+
+    .vc-preset-pill:disabled { opacity: .55; cursor: not-allowed; }
 
     .vc-shell .el-button {
       --el-button-text-color: var(--vc-text);
@@ -582,7 +692,7 @@ const videoCollectionLiquidUi = (() => {
       --el-button-hover-text-color: var(--vc-text);
       --el-button-hover-bg-color: var(--vc-control-hover);
       --el-button-hover-border-color: var(--vc-border);
-      min-height: 36px;
+      min-height: 38px;
       border-radius: 999px;
       font-weight: 600;
       transition: transform 100ms ease-out, background 160ms ease, opacity 160ms ease;
@@ -610,31 +720,30 @@ const videoCollectionLiquidUi = (() => {
       opacity: .85;
     }
 
-    .vc-date-grid {
+    .vc-date-range {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 10px;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      background: var(--vc-control);
+      border: 1px solid var(--vc-border-soft);
+      border-radius: 13px;
     }
 
-    .vc-date-field {
-      display: grid;
-      gap: 4px;
-      min-width: 0;
-      color: var(--vc-muted);
-      font-size: 11.5px;
-      font-weight: 600;
-      letter-spacing: .01em;
+    .vc-date-range:focus-within {
+      border-color: var(--vc-accent);
+      box-shadow: 0 0 0 3px var(--vc-accent-soft);
     }
 
     .vc-date-input {
       width: 100%;
       min-width: 0;
-      height: 36px;
-      padding: 0 10px;
+      height: 26px;
+      padding: 0;
       color: var(--vc-text);
-      background: var(--vc-control);
-      border: 1px solid var(--vc-border-soft);
-      border-radius: 12px;
+      background: transparent;
+      border: none;
       font: inherit;
       font-size: 12.5px;
       font-weight: 600;
@@ -642,60 +751,26 @@ const videoCollectionLiquidUi = (() => {
       outline: none;
     }
 
-    .vc-date-input:focus {
-      border-color: var(--vc-accent);
-      box-shadow: 0 0 0 3px var(--vc-accent-soft);
-    }
-
     .vc-date-input:disabled { opacity: .56; }
-    .dark .vc-date-input::-webkit-calendar-picker-indicator { filter: invert(1); }
+    .dark .vc-date-input::-webkit-calendar-picker-indicator { filter: invert(1); opacity: .75; }
+    .vc-date-sep { color: var(--vc-muted); font-size: 12px; }
 
     .vc-scope-note {
       padding: 10px 12px;
       color: var(--vc-warning);
       background: var(--vc-warning-bg);
       border: 1px solid rgb(222 163 53 / 22%);
-      border-radius: 15px;
-      overflow-wrap: anywhere;
-    }
-
-    .vc-progress-grid { display: grid; gap: 7px; }
-
-    .vc-progress-card {
-      display: grid;
-      grid-template-columns: 9px 1fr;
-      align-items: start;
-      gap: 9px;
-      min-height: 38px;
-      padding: 9px 11px;
-      background: var(--vc-control);
-      border: 1px solid var(--vc-border-soft);
       border-radius: 14px;
-      font-variant-numeric: tabular-nums;
+      font-size: 12px;
+      line-height: 1.45;
       overflow-wrap: anywhere;
     }
 
     .vc-state-dot {
-      width: 8px;
-      height: 8px;
-      margin-top: 5px;
-      background: #9aa7b8;
+      width: 6px;
+      height: 6px;
+      background: currentColor;
       border-radius: 50%;
-      box-shadow: 0 0 0 4px rgb(154 167 184 / 12%);
-    }
-
-    [data-state="ready"] .vc-state-dot { background: #34c759; box-shadow: 0 0 0 4px rgb(52 199 89 / 13%); }
-    [data-state="active"] .vc-state-dot { background: var(--vc-accent); box-shadow: 0 0 0 4px var(--vc-accent-soft); animation: vc-pulse 1.45s ease-in-out infinite; }
-    [data-state="done"] .vc-state-dot { background: #30d6c4; box-shadow: 0 0 0 4px rgb(48 214 196 / 13%); }
-
-    .vc-workbook-card {
-      display: grid;
-      gap: 9px;
-      padding: 12px 14px;
-      background: var(--vc-standard);
-      border: 1px solid var(--vc-border-soft);
-      border-radius: 18px;
-      box-shadow: var(--vc-card-shadow);
     }
 
     .vc-workbook-grid {
@@ -705,77 +780,43 @@ const videoCollectionLiquidUi = (() => {
     }
 
     .vc-workbook-item {
-      display: grid;
-      grid-template-columns: 9px minmax(0, 1fr);
-      align-items: start;
-      gap: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
       min-width: 0;
-      padding: 9px 11px;
+      padding: 10px 12px;
       background: var(--vc-control);
       border: 1px solid var(--vc-border-soft);
       border-radius: 13px;
     }
 
-    .vc-workbook-copy { display: grid; gap: 2px; min-width: 0; }
-    .vc-workbook-copy strong { font-size: 12.5px; font-weight: 650; }
-    .vc-workbook-copy small {
-      color: var(--vc-muted);
-      font-size: 11px;
-      font-variant-numeric: tabular-nums;
-      letter-spacing: .01em;
-      line-height: 1.4;
-      overflow-wrap: anywhere;
+    .vc-workbook-name {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--vc-text);
     }
 
-    .vc-workbook-status {
-      margin: 0;
+    .vc-workbook-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
       color: var(--vc-muted);
       font-size: 11.5px;
+      font-weight: 600;
       letter-spacing: .01em;
-      overflow-wrap: anywhere;
+      white-space: nowrap;
     }
 
-    .vc-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .vc-actions .el-button {
-      flex: 1 1 auto;
-      margin-left: 0 !important;
-    }
-
-    .vc-status {
-      min-height: 0;
-      margin: 0;
-      padding: 9px 12px;
-      color: var(--vc-muted);
-      background: var(--vc-standard);
-      border: 1px solid var(--vc-border-soft);
-      border-radius: 13px;
-      font-size: 12px;
-      line-height: 1.45;
-      overflow-wrap: anywhere;
-    }
-
-    .vc-status:empty { display: none; }
-
-    .vc-content-card {
-      display: grid;
-      gap: 10px;
-      padding: 12px 14px;
-    }
-
-    .vc-summary {
-      display: grid;
-      gap: 8px;
-    }
+    .vc-workbook-item[data-state="done"] .vc-workbook-badge { color: #059669; }
+    .dark .vc-workbook-item[data-state="done"] .vc-workbook-badge { color: #34d399; }
+    .vc-workbook-item[data-state="active"] .vc-workbook-badge { color: var(--vc-accent); }
 
     .vc-filter-list {
       display: flex;
       flex-wrap: wrap;
-      gap: 6px;
+      gap: 5px;
+      justify-content: flex-end;
     }
 
     .vc-shell .el-tag {
@@ -783,25 +824,92 @@ const videoCollectionLiquidUi = (() => {
       --el-tag-border-color: var(--vc-border-soft);
       --el-tag-text-color: var(--vc-muted);
       border-radius: 999px;
+      font-size: 11px;
       font-weight: 600;
       letter-spacing: .01em;
     }
 
-    .vc-count {
-      margin: 0;
+    /* KPI Metrics */
+    .vc-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .vc-kpi-box {
+      padding: 10px 12px;
+      background: var(--vc-control);
+      border: 1px solid var(--vc-border-soft);
+      border-radius: 13px;
+    }
+
+    .vc-kpi-label {
+      margin-bottom: 2px;
+      color: var(--vc-muted);
+      font-size: 11.5px;
+      letter-spacing: .01em;
+    }
+
+    .vc-kpi-value {
       color: var(--vc-text);
-      font-size: 16px;
-      font-variant-numeric: tabular-nums;
+      font-size: 21px;
       font-weight: 700;
+      font-variant-numeric: tabular-nums;
       letter-spacing: -.02em;
+      line-height: 1.2;
+    }
+
+    .vc-kpi-box.highlight .vc-kpi-value { color: var(--vc-accent); }
+
+    .vc-kpi-unit {
+      margin-left: 2px;
+      color: var(--vc-muted);
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .vc-progress-track {
+      height: 5px;
+      margin-top: 10px;
+      overflow: hidden;
+      background: var(--vc-control);
+      border-radius: 999px;
+    }
+
+    .vc-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #60a5fa, #2563eb);
+      border-radius: 999px;
+      transition: width 250ms ease;
     }
 
     .vc-table-scroll {
-      max-height: 250px;
+      max-height: 210px;
+      margin-top: 10px;
       overflow: auto;
       background: transparent;
       border: 1px solid var(--vc-border-soft);
-      border-radius: 14px;
+      border-radius: 13px;
+    }
+
+    /* Sticky Action Footer */
+    .vc-footer {
+      display: flex;
+      flex: 0 0 auto;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 16px 16px;
+    }
+
+    .vc-footer .el-button {
+      flex: 1;
+      margin-left: 0 !important;
+      font-size: 12.5px;
+    }
+
+    .vc-footer .el-button--primary {
+      flex: 1.25;
+      font-size: 13px;
     }
 
     .vc-result-table {
@@ -956,56 +1064,64 @@ const videoCollectionLiquidUi = (() => {
           </header>
 
           <div class="vc-panel-body">
-            <section class="vc-period-card">
-              <div class="vc-period-head">
-                <div>
-                  <span class="vc-section-label">{{ view.periodLabel }}</span>
-                  <strong class="vc-period-value">{{ view.periodText }}</strong>
-                </div>
-                <el-button :disabled="view.running" @click="useMonth">本月</el-button>
-              </div>
-              <div class="vc-date-grid">
-                <label class="vc-date-field">
-                  开始日期
-                  <input
-                    v-model="dateStart"
-                    class="vc-date-input"
-                    type="date"
-                    required
-                    :disabled="view.running"
-                    @change="applyDates"
-                  >
-                </label>
-                <label class="vc-date-field">
-                  结束日期
-                  <input
-                    v-model="dateEnd"
-                    class="vc-date-input"
-                    type="date"
-                    required
-                    :disabled="view.running"
-                    @change="applyDates"
-                  >
-                </label>
-              </div>
-            </section>
-
-            <div v-if="view.scopeNote" class="vc-scope-note" role="status">{{ view.scopeNote }}</div>
-
-            <div class="vc-progress-grid">
-              <div
-                v-for="item in view.progress"
-                :key="item.key"
-                class="vc-progress-card"
-                :data-state="item.state"
-              >
-                <span class="vc-state-dot" aria-hidden="true"></span>
-                <span>{{ item.text }}</span>
+            <div class="vc-banner" :class="banner.state" role="status">
+              <span class="vc-banner-dot" aria-hidden="true"></span>
+              <div class="vc-banner-copy">
+                <div class="vc-banner-title">{{ banner.title }}</div>
+                <div v-if="banner.desc" class="vc-banner-desc">{{ banner.desc }}</div>
               </div>
             </div>
 
-            <section class="vc-workbook-card" aria-label="汇总数据状态">
-              <span class="vc-section-label">汇总数据</span>
+            <div v-if="view.scopeNote" class="vc-scope-note" role="status">{{ view.scopeNote }}</div>
+
+            <section class="vc-card">
+              <div class="vc-card-head">
+                <span class="vc-card-title">{{ view.periodLabel }}范围</span>
+                <div class="vc-preset-pills">
+                  <button
+                    type="button"
+                    class="vc-preset-pill"
+                    :class="{ active: activePreset === '7d' }"
+                    :disabled="view.running"
+                    @click="useRecentDays(7)"
+                  >近7天</button>
+                  <button
+                    type="button"
+                    class="vc-preset-pill"
+                    :class="{ active: activePreset === 'month' }"
+                    :disabled="view.running"
+                    @click="useMonth"
+                  >本月</button>
+                </div>
+              </div>
+              <div class="vc-date-range">
+                <input
+                  v-model="dateStart"
+                  class="vc-date-input"
+                  type="date"
+                  aria-label="开始日期"
+                  required
+                  :disabled="view.running"
+                  @change="applyDates"
+                >
+                <span class="vc-date-sep">至</span>
+                <input
+                  v-model="dateEnd"
+                  class="vc-date-input"
+                  type="date"
+                  aria-label="结束日期"
+                  required
+                  :disabled="view.running"
+                  @change="applyDates"
+                >
+              </div>
+            </section>
+
+            <section class="vc-card" aria-label="汇总进度">
+              <div class="vc-card-head">
+                <span class="vc-card-title">汇总进度</span>
+                <span class="vc-card-hint" role="status">{{ workbookError || view.workbookStatus }}</span>
+              </div>
               <div class="vc-workbook-grid">
                 <div
                   v-for="item in view.workbookItems"
@@ -1013,44 +1129,35 @@ const videoCollectionLiquidUi = (() => {
                   class="vc-workbook-item"
                   :data-state="item.state"
                 >
-                  <span class="vc-state-dot" aria-hidden="true"></span>
-                  <span class="vc-workbook-copy">
-                    <strong>{{ item.label }}</strong>
-                    <small>{{ item.text }}</small>
+                  <span class="vc-workbook-name">{{ item.label }}</span>
+                  <span class="vc-workbook-badge">
+                    <span class="vc-state-dot" aria-hidden="true"></span>
+                    <span>{{ item.state === 'done' ? '已完成' : item.state === 'active' ? '采集中' : '未采集' }}</span>
                   </span>
                 </div>
               </div>
-              <p class="vc-workbook-status" role="status">{{ workbookError || view.workbookStatus }}</p>
             </section>
 
-            <div class="vc-actions">
-              <el-button
-                v-if="!view.running"
-                ref="startButton"
-                type="primary"
-                :disabled="view.startDisabled"
-                @click="startRun"
-              >{{ view.startLabel }}</el-button>
-              <el-button
-                v-else
-                :disabled="view.pauseDisabled"
-                @click="pauseRun"
-              >{{ view.pauseDisabled ? '正在暂停' : '暂停采集' }}</el-button>
-              <el-button :disabled="view.downloadDisabled" @click="download">{{ config.downloadLabel }}</el-button>
-              <el-button
-                :disabled="view.combinedDownloadDisabled"
-                @click="downloadCombined"
-              >下载总 Excel</el-button>
-            </div>
-
-            <p class="vc-status" role="status">{{ view.status }}</p>
-
-            <section class="vc-content-card">
-              <div class="vc-summary">
+            <section class="vc-card">
+              <div class="vc-card-head">
+                <span class="vc-card-title">当前页面统计</span>
                 <div class="vc-filter-list">
                   <el-tag v-for="filter in view.filters" :key="filter" effect="plain" round>{{ filter }}</el-tag>
                 </div>
-                <p class="vc-count">{{ view.countText }}</p>
+              </div>
+              <div class="vc-kpi-grid">
+                <div
+                  v-for="kpi in view.kpis"
+                  :key="kpi.label"
+                  class="vc-kpi-box"
+                  :class="{ highlight: kpi.highlight }"
+                >
+                  <div class="vc-kpi-label">{{ kpi.label }}</div>
+                  <div class="vc-kpi-value">{{ kpi.value }}<span class="vc-kpi-unit">{{ kpi.unit }}</span></div>
+                </div>
+              </div>
+              <div v-if="view.progressPercent > 0" class="vc-progress-track">
+                <div class="vc-progress-fill" :style="{ width: view.progressPercent + '%' }"></div>
               </div>
               <div v-if="view.rows.length" class="vc-table-scroll">
                 <table class="vc-result-table" :aria-label="config.tableLabel">
@@ -1087,6 +1194,27 @@ const videoCollectionLiquidUi = (() => {
               </div>
             </section>
           </div>
+
+          <footer class="vc-footer">
+            <el-button
+              v-if="!view.running"
+              ref="startButton"
+              type="primary"
+              :disabled="view.startDisabled"
+              @click="startRun"
+            >{{ view.startLabel }}</el-button>
+            <el-button
+              v-else
+              type="primary"
+              :disabled="view.pauseDisabled"
+              @click="pauseRun"
+            >{{ view.pauseDisabled ? '正在暂停' : '暂停采集' }}</el-button>
+            <el-button :disabled="view.downloadDisabled" @click="download">导出 CSV</el-button>
+            <el-button
+              :disabled="view.combinedDownloadDisabled"
+              @click="downloadCombined"
+            >总 Excel</el-button>
+          </footer>
         </section>
       </transition>
     </div>
@@ -1248,9 +1376,10 @@ const videoCollectionLiquidUi = (() => {
           },
           theme: loadTheme(),
           themeOptions: [
-            { label: 'SUN', value: 'sun' },
-            { label: 'Dark', value: 'dark' },
+            { label: '☀️ 浅色', value: 'sun' },
+            { label: '🌙 深色', value: 'dark' },
           ],
+          activePreset: 'month',
           dateStart: initial.startDate,
           dateEnd: initial.endDate,
         };
@@ -1259,6 +1388,23 @@ const videoCollectionLiquidUi = (() => {
         view() {
           this.revision;
           return options.getView();
+        },
+        banner() {
+          const v = this.view;
+          const progressText = (v.progress || []).map((p) => p.text).join(' ');
+          if (v.running) {
+            return { state: 'collecting', title: progressText || '正在采集中...', desc: v.status };
+          }
+          if (!v.combinedDownloadDisabled) {
+            return { state: 'done', title: '全部采集完成', desc: v.workbookStatus || v.status };
+          }
+          if (!v.downloadDisabled) {
+            return { state: 'done', title: progressText || '当前页面采集完成', desc: v.status };
+          }
+          if (!v.startDisabled) {
+            return { state: 'ready', title: progressText || '接口已捕获 随时可以采集', desc: v.status || '点击下方「开始采集」自动拉取当前日期范围数据' };
+          }
+          return { state: 'waiting', title: progressText || '等待捕获列表请求', desc: v.status };
         },
       },
       methods: {
@@ -1400,6 +1546,17 @@ const videoCollectionLiquidUi = (() => {
           storeTheme(value);
         },
         applyDates() {
+          this.activePreset = '';
+          options.applyDates(this.dateStart, this.dateEnd, false);
+          this.sync();
+        },
+        useRecentDays(days) {
+          const base = this.dateEnd ? new Date(`${this.dateEnd}T00:00:00`) : new Date();
+          const start = new Date(base.getTime() - ((days - 1) * 24 * 60 * 60 * 1000));
+          const pad = (n) => String(n).padStart(2, '0');
+          this.dateStart = `${start.getFullYear()}-${pad(start.getMonth() + 1)}-${pad(start.getDate())}`;
+          this.dateEnd = `${base.getFullYear()}-${pad(base.getMonth() + 1)}-${pad(base.getDate())}`;
+          this.activePreset = '7d';
           options.applyDates(this.dateStart, this.dateEnd, false);
           this.sync();
         },
@@ -1407,6 +1564,7 @@ const videoCollectionLiquidUi = (() => {
           const period = options.monthPeriod();
           this.dateStart = period.startDate;
           this.dateEnd = period.endDate;
+          this.activePreset = 'month';
           options.applyDates(this.dateStart, this.dateEnd, true);
           this.sync();
         },
@@ -2123,6 +2281,15 @@ const videoCollectionLiquidUi = (() => {
         `消耗 ≥ ${numberFormat.format(minSpend)} 元`,
         `展现 ≥ ${numberFormat.format(minImpressions)} 次`,
       ],
+      kpis: [
+        { label: '已采集', value: numberFormat.format(totals.scanned), unit: '条' },
+        { label: '达标素材', value: numberFormat.format(totals.matches), unit: '条', highlight: true },
+        { label: '消耗', value: numberFormat.format(totals.spendCents / 100), unit: '元' },
+        { label: '展现', value: numberFormat.format(totals.impressions), unit: '次' },
+      ],
+      progressPercent: complete ? 100 : (run?.scans?.length
+        ? Math.min(95, Math.round((run.scans.reduce((sum, s) => sum + s.pages, 0) / Math.max(1, run.scans.reduce((sum, s) => sum + (s.total ? Math.ceil(s.total / batchLimit) : 1), 0))) * 100))
+        : 0),
       countText: [
         `已采集 ${numberFormat.format(totals.scanned)} 条`,
         `达标 ${numberFormat.format(totals.matches)} 条`,
@@ -2757,6 +2924,13 @@ const videoCollectionLiquidUi = (() => {
         text: progressText(run),
       }],
       filters: [`观看次数 > ${numberFormat.format(minWatchCount)} 次`],
+      kpis: [
+        { label: '已采集', value: numberFormat.format(run?.scanned ?? 0), unit: '条' },
+        { label: '达标视频', value: numberFormat.format(run?.matches.size ?? 0), unit: '条', highlight: true },
+      ],
+      progressPercent: complete ? 100 : (run?.total
+        ? Math.min(95, Math.round((run.pages / Math.max(1, Math.ceil(run.total / run.pageSize))) * 100))
+        : 0),
       countText: [
         `已采集 ${numberFormat.format(run?.scanned ?? 0)} 条`,
         `达标 ${numberFormat.format(run?.matches.size ?? 0)} 条`,
