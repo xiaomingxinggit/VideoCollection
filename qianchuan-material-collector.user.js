@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         千川素材请求采集
 // @namespace    VideoCollection
-// @version      1.6.6
+// @version      1.6.7
 // @description  采集千川素材与抖店自营视频，支持单页 CSV 与双页 Excel 汇总导出。
 // @updateURL    https://raw.githubusercontent.com/xiaomingxinggit/VideoCollection/main/qianchuan-material-collector.user.js
 // @downloadURL  https://raw.githubusercontent.com/xiaomingxinggit/VideoCollection/main/qianchuan-material-collector.user.js
@@ -1201,7 +1201,7 @@ const videoCollectionLiquidUi = (() => {
                   <el-tag v-for="filter in view.filters" :key="filter" effect="plain" round>{{ filter }}</el-tag>
                 </div>
               </div>
-              <div class="vc-kpi-grid" :class="{ 'is-quad': view.kpis && view.kpis.length > 2 }">
+              <div class="vc-kpi-grid">
                 <div
                   v-for="kpi in view.kpis"
                   :key="kpi.label"
@@ -2340,8 +2340,6 @@ const videoCollectionLiquidUi = (() => {
       kpis: [
         { label: '已采集', value: numberFormat.format(totals.scanned), unit: '条' },
         { label: '达标素材', value: numberFormat.format(totals.matches), unit: '条', highlight: true },
-        { label: '消耗', value: numberFormat.format(totals.spendCents / 100), unit: '元' },
-        { label: '展现', value: numberFormat.format(totals.impressions), unit: '次' },
       ],
       progressPercent: complete ? 100 : (run?.scans?.length
         ? Math.min(95, Math.round((run.scans.reduce((sum, s) => sum + s.pages, 0) / Math.max(1, run.scans.reduce((sum, s) => sum + (s.total ? Math.ceil(s.total / batchLimit) : 1), 0))) * 100))
