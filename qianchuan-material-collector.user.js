@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         千川素材请求采集
 // @namespace    VideoCollection
-// @version      1.6.5
+// @version      1.6.6
 // @description  采集千川素材与抖店自营视频，支持单页 CSV 与双页 Excel 汇总导出。
 // @updateURL    https://raw.githubusercontent.com/xiaomingxinggit/VideoCollection/main/qianchuan-material-collector.user.js
 // @downloadURL  https://raw.githubusercontent.com/xiaomingxinggit/VideoCollection/main/qianchuan-material-collector.user.js
@@ -610,8 +610,30 @@ const videoCollectionLiquidUi = (() => {
       75%, 100% { transform: scale(1.85); opacity: 0; }
     }
 
-    .vc-banner-copy { min-width: 0; }
+    .vc-banner-copy { min-width: 0; flex: 1; }
     .vc-banner-title { font-size: 13px; font-weight: 700; line-height: 1.35; }
+    .vc-banner-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 4px;
+    }
+    .vc-banner-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 2px 8px;
+      background: rgb(255 255 255 / 55%);
+      border-radius: 999px;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--vc-text);
+    }
+    .dark .vc-banner-pill { background: rgb(255 255 255 / 10%); }
+    .vc-banner-pill[data-state="ready"] .vc-state-dot,
+    .vc-banner-pill[data-state="done"] .vc-state-dot { color: #10b981; }
+    .vc-banner-pill[data-state="waiting"] .vc-state-dot { color: #94a3b8; }
+    .vc-banner-pill[data-state="active"] .vc-state-dot { color: var(--vc-accent); }
     .vc-banner-desc {
       margin-top: 2px;
       font-size: 11.5px;
@@ -620,6 +642,16 @@ const videoCollectionLiquidUi = (() => {
       opacity: .9;
       overflow-wrap: anywhere;
     }
+    .vc-banner-note {
+      margin-top: 5px;
+      padding-top: 5px;
+      border-top: 1px solid rgb(15 23 42 / 8%);
+      font-size: 11px;
+      line-height: 1.4;
+      opacity: .85;
+      overflow-wrap: anywhere;
+    }
+    .dark .vc-banner-note { border-top-color: rgb(255 255 255 / 10%); }
 
     /* Inner Card */
     .vc-card {
@@ -836,11 +868,20 @@ const videoCollectionLiquidUi = (() => {
       gap: 10px;
     }
 
+    .vc-kpi-grid.is-quad {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+    }
+
     .vc-kpi-box {
       padding: 10px 12px;
       background: var(--vc-control);
       border: 1px solid var(--vc-border-soft);
       border-radius: 13px;
+    }
+
+    .vc-kpi-grid.is-quad .vc-kpi-box {
+      padding: 9px 10px;
     }
 
     .vc-kpi-label {
@@ -857,6 +898,10 @@ const videoCollectionLiquidUi = (() => {
       font-variant-numeric: tabular-nums;
       letter-spacing: -.02em;
       line-height: 1.2;
+    }
+
+    .vc-kpi-grid.is-quad .vc-kpi-value {
+      font-size: 17px;
     }
 
     .vc-kpi-box.highlight .vc-kpi-value { color: var(--vc-accent); }
@@ -898,7 +943,7 @@ const videoCollectionLiquidUi = (() => {
       flex: 0 0 auto;
       align-items: center;
       gap: 8px;
-      padding: 4px 16px 16px;
+      padding: 8px 16px 15px;
     }
 
     .vc-footer .el-button {
@@ -970,6 +1015,7 @@ const videoCollectionLiquidUi = (() => {
       .vc-panel-body { padding-inline: 13px; }
       .vc-header { padding-inline: 15px 11px; }
       .vc-workbook-grid { grid-template-columns: 1fr; }
+      .vc-kpi-grid.is-quad { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .vc-shell .el-segmented__item { min-width: 42px; }
       .vc-result-table { table-layout: auto; font-size: 12px; }
       .vc-result-table col { width: auto !important; min-width: 0 !important; }
@@ -1067,12 +1113,22 @@ const videoCollectionLiquidUi = (() => {
             <div class="vc-banner" :class="banner.state" role="status">
               <span class="vc-banner-dot" aria-hidden="true"></span>
               <div class="vc-banner-copy">
-                <div class="vc-banner-title">{{ banner.title }}</div>
+                <div v-if="view.progress && view.progress.length > 1" class="vc-banner-pills">
+                  <span
+                    v-for="item in view.progress"
+                    :key="item.key"
+                    class="vc-banner-pill"
+                    :data-state="item.state"
+                  >
+                    <span class="vc-state-dot" aria-hidden="true"></span>
+                    <span>{{ item.text }}</span>
+                  </span>
+                </div>
+                <div v-else class="vc-banner-title">{{ banner.title }}</div>
                 <div v-if="banner.desc" class="vc-banner-desc">{{ banner.desc }}</div>
+                <div v-if="view.scopeNote" class="vc-banner-note">{{ view.scopeNote }}</div>
               </div>
             </div>
-
-            <div v-if="view.scopeNote" class="vc-scope-note" role="status">{{ view.scopeNote }}</div>
 
             <section class="vc-card">
               <div class="vc-card-head">
@@ -1145,7 +1201,7 @@ const videoCollectionLiquidUi = (() => {
                   <el-tag v-for="filter in view.filters" :key="filter" effect="plain" round>{{ filter }}</el-tag>
                 </div>
               </div>
-              <div class="vc-kpi-grid">
+              <div class="vc-kpi-grid" :class="{ 'is-quad': view.kpis && view.kpis.length > 2 }">
                 <div
                   v-for="kpi in view.kpis"
                   :key="kpi.label"
