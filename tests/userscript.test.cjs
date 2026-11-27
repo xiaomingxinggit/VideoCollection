@@ -738,4 +738,11 @@ test('Qianchuan kaomoji grouping accumulates live and product spend and impressi
     rows,
   });
   assert.deepEqual(singleWorkbook.SheetNames, ['千川素材', '千川分组汇总']);
+
+  const compassWorkbook = workbook.module.buildCompassWorkbook({
+    startDate: '2026-11-01',
+    endDate: '2026-11-25',
+    rows: [{ title: '自营视频标题', watchCount: 30001 }],
+  });
+  assert.deepEqual(compassWorkbook.SheetNames, ['自营视频']);
 });

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         千川素材请求采集
 // @namespace    VideoCollection
-// @version      1.7.1
+// @version      1.7.2
 // @description  采集千川素材与抖店自营视频，支持单页 CSV 与双页 Excel 汇总导出。
 // @updateURL    https://raw.githubusercontent.com/xiaomingxinggit/VideoCollection/main/qianchuan-material-collector.user.js
 // @downloadURL  https://raw.githubusercontent.com/xiaomingxinggit/VideoCollection/main/qianchuan-material-collector.user.js
@@ -323,12 +323,33 @@ const videoCollectionWorkbook = (() => {
     XLSX.utils.book_append_sheet(workbook, groupSheet, '千川分组汇总');
   }
 
+  function appendCompassSheet(workbook, rows) {
+    const compassRows = [
+      ['标题', '观看次数'],
+      ...rows.map((row) => [row.title, row.watchCount]),
+    ];
+    const compassSheet = XLSX.utils.aoa_to_sheet(compassRows);
+    compassSheet['!cols'] = [{ wch: 58 }, { wch: 18 }];
+    compassSheet['!autofilter'] = { ref: compassSheet['!ref'] || 'A1:B1' };
+    setNumberFormat(compassSheet, 1, rows.length, '#,##0');
+    XLSX.utils.book_append_sheet(workbook, compassSheet, '自营视频');
+  }
+
   function buildQianchuanWorkbook(snapshot) {
     if (typeof XLSX === 'undefined' || !XLSX?.utils) {
       throw new Error('Excel 组件未加载，请刷新页面后重试。');
     }
     const workbook = XLSX.utils.book_new();
     appendQianchuanSheets(workbook, snapshot.rows);
+    return workbook;
+  }
+
+  function buildCompassWorkbook(snapshot) {
+    if (typeof XLSX === 'undefined' || !XLSX?.utils) {
+      throw new Error('Excel 组件未加载，请刷新页面后重试。');
+    }
+    const workbook = XLSX.utils.book_new();
+    appendCompassSheet(workbook, snapshot.rows);
     return workbook;
   }
 
@@ -339,24 +360,22 @@ const videoCollectionWorkbook = (() => {
     return filename;
   }
 
+  function downloadCompass(snapshot) {
+    const workbook = buildCompassWorkbook(snapshot);
+    const filename = `compass-self-video-${snapshot.startDate}_${snapshot.endDate}.xlsx`;
+    XLSX.writeFileXLSX(workbook, filename, { compression: true });
+    return filename;
+  }
+
   function buildWorkbook(state = summary()) {
     if (!state.ready) throw new Error(state.message);
     if (typeof XLSX === 'undefined' || !XLSX?.utils) {
       throw new Error('Excel 组件未加载，请刷新页面后重试。');
     }
 
-    const compassRows = [
-      ['标题', '观看次数'],
-      ...state.compass.rows.map((row) => [row.title, row.watchCount]),
-    ];
     const workbook = XLSX.utils.book_new();
     appendQianchuanSheets(workbook, state.qianchuan.rows);
-
-    const compassSheet = XLSX.utils.aoa_to_sheet(compassRows);
-    compassSheet['!cols'] = [{ wch: 58 }, { wch: 18 }];
-    compassSheet['!autofilter'] = { ref: compassSheet['!ref'] || 'A1:B1' };
-    setNumberFormat(compassSheet, 1, state.compass.rows.length, '#,##0');
-    XLSX.utils.book_append_sheet(workbook, compassSheet, '自营视频');
+    appendCompassSheet(workbook, state.compass.rows);
     return workbook;
   }
 
@@ -393,9 +412,9 @@ const videoCollectionWorkbook = (() => {
   }
 
   return {
-    begin, buildQianchuanGroupRows, buildQianchuanWorkbook, buildWorkbook, downloadCombined,
-    downloadQianchuan, invalidate, matchKaomojiGroup, read, save, storageKeys, subscribe,
-    summary, unsubscribe,
+    begin, buildCompassWorkbook, buildQianchuanGroupRows, buildQianchuanWorkbook, buildWorkbook,
+    downloadCombined, downloadCompass, downloadQianchuan, invalidate, matchKaomojiGroup,
+    read, save, storageKeys, subscribe, summary, unsubscribe,
   };
 })();
 
@@ -3058,7 +3077,7 @@ const videoCollectionLiquidUi = (() => {
 
     if (dateError) status = dateError;
     else if (running) status = run.pauseRequested ? '正在暂停' : '正在逐页采集，请保持页面打开。';
-    else if (complete) status = run.storageError || '自营视频筛选完成，可以下载当前 CSV。';
+    else if (complete) status = run.storageError || '自营视频筛选完成，可以导出 Excel。';
     else if (run?.phase === 'paused') status = run.error || '采集已暂停，进度已保留。';
     else if (!template) status = '请刷新页面或重新查询视频明细，等待捕获列表请求。';
 
@@ -3133,7 +3152,7 @@ const videoCollectionLiquidUi = (() => {
         title: '自营视频采集',
         launcherLabel: '自营视频采集',
         panelTop: '300px',
-        downloadLabel: '下载当前 CSV',
+        downloadLabel: '导出 Excel',
         tableLabel: '符合筛选条件的自营视频',
       },
       initialPeriod: () => ({
@@ -3151,7 +3170,9 @@ const videoCollectionLiquidUi = (() => {
         updatePanel();
       },
       download: () => {
-        if (batch?.phase === 'complete') downloadCsv(batch);
+        if (batch?.phase === 'complete') {
+          videoCollectionWorkbook.downloadCompass(workbookSnapshot(batch));
+        }
       },
       downloadCombined: () => videoCollectionWorkbook.downloadCombined(),
       subscribe: (callback) => videoCollectionWorkbook.subscribe(callback),
