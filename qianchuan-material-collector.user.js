@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         千川素材请求采集
 // @namespace    VideoCollection
-// @version      1.6.3
+// @version      1.6.4
 // @description  采集千川素材与抖店自营视频，支持单页 CSV 与双页 Excel 汇总导出。
 // @updateURL    https://raw.githubusercontent.com/xiaomingxinggit/VideoCollection/main/qianchuan-material-collector.user.js
 // @downloadURL  https://raw.githubusercontent.com/xiaomingxinggit/VideoCollection/main/qianchuan-material-collector.user.js
@@ -310,22 +310,22 @@ const videoCollectionLiquidUi = (() => {
     [hidden] { display: none !important; }
 
     .vc-shell {
-      --vc-accent: #087cff;
-      --vc-accent-strong: #0067df;
-      --vc-accent-soft: rgb(8 124 255 / 13%);
-      --vc-glass: rgb(246 250 255 / 76%);
-      --vc-glass-strong: rgb(255 255 255 / 88%);
-      --vc-standard: rgb(255 255 255 / 72%);
-      --vc-control: rgb(255 255 255 / 58%);
-      --vc-control-hover: rgb(255 255 255 / 82%);
-      --vc-border: rgb(255 255 255 / 76%);
-      --vc-border-soft: rgb(83 111 145 / 16%);
-      --vc-text: #182235;
-      --vc-muted: #5c6c82;
-      --vc-warning: #8a5600;
-      --vc-warning-bg: rgb(255 246 218 / 78%);
-      --vc-shadow: 0 28px 80px rgb(25 48 78 / 24%), 0 2px 12px rgb(28 55 90 / 12%);
-      --vc-inner-highlight: inset 0 1px 0 rgb(255 255 255 / 90%);
+      --vc-accent: #2563eb;
+      --vc-accent-strong: #1d4ed8;
+      --vc-accent-soft: rgb(37 99 235 / 12%);
+      --vc-glass: rgb(255 255 255 / 66%);
+      --vc-glass-strong: rgb(255 255 255 / 92%);
+      --vc-standard: rgb(255 255 255 / 84%);
+      --vc-control: rgb(241 245 249 / 82%);
+      --vc-control-hover: rgb(255 255 255 / 96%);
+      --vc-border: rgb(15 23 42 / 7%);
+      --vc-border-soft: rgb(15 23 42 / 7%);
+      --vc-text: #0f172a;
+      --vc-muted: #64748b;
+      --vc-warning: #92400e;
+      --vc-warning-bg: rgb(254 243 199 / 78%);
+      --vc-shadow: 0 24px 60px -12px rgb(15 23 42 / 18%), 0 4px 16px rgb(15 23 42 / 6%);
+      --vc-card-shadow: 0 2px 10px rgb(15 23 42 / 3.5%);
       --el-color-primary: var(--vc-accent);
       --el-color-primary-dark-2: var(--vc-accent-strong);
       --el-text-color-primary: var(--vc-text);
@@ -333,9 +333,9 @@ const videoCollectionLiquidUi = (() => {
       --el-text-color-secondary: var(--vc-muted);
       --el-border-color: var(--vc-border-soft);
       --el-border-color-light: var(--vc-border-soft);
-      --el-border-color-lighter: rgb(83 111 145 / 10%);
+      --el-border-color-lighter: rgb(15 23 42 / 5%);
       --el-fill-color-blank: transparent;
-      --el-fill-color-light: rgb(255 255 255 / 44%);
+      --el-fill-color-light: rgb(241 245 249 / 70%);
       --el-bg-color: var(--vc-standard);
       --el-bg-color-overlay: var(--vc-glass-strong);
       color: var(--vc-text);
@@ -344,22 +344,22 @@ const videoCollectionLiquidUi = (() => {
     }
 
     .vc-shell.dark {
-      --vc-accent: #58a8ff;
-      --vc-accent-strong: #84beff;
-      --vc-accent-soft: rgb(88 168 255 / 18%);
-      --vc-glass: rgb(17 24 34 / 79%);
-      --vc-glass-strong: rgb(26 35 48 / 92%);
-      --vc-standard: rgb(24 33 46 / 84%);
-      --vc-control: rgb(255 255 255 / 9%);
-      --vc-control-hover: rgb(255 255 255 / 15%);
-      --vc-border: rgb(255 255 255 / 18%);
-      --vc-border-soft: rgb(255 255 255 / 11%);
-      --vc-text: #f4f8ff;
-      --vc-muted: #aab8ca;
-      --vc-warning: #ffd58a;
-      --vc-warning-bg: rgb(92 62 18 / 64%);
-      --vc-shadow: 0 30px 90px rgb(0 0 0 / 52%), 0 2px 14px rgb(0 0 0 / 35%);
-      --vc-inner-highlight: inset 0 1px 0 rgb(255 255 255 / 20%);
+      --vc-accent: #3b82f6;
+      --vc-accent-strong: #60a5fa;
+      --vc-accent-soft: rgb(59 130 246 / 18%);
+      --vc-glass: rgb(17 24 39 / 72%);
+      --vc-glass-strong: rgb(30 41 59 / 94%);
+      --vc-standard: rgb(30 41 59 / 82%);
+      --vc-control: rgb(15 23 42 / 68%);
+      --vc-control-hover: rgb(255 255 255 / 14%);
+      --vc-border: rgb(255 255 255 / 9%);
+      --vc-border-soft: rgb(255 255 255 / 8%);
+      --vc-text: #f8fafc;
+      --vc-muted: #94a3b8;
+      --vc-warning: #fcd34d;
+      --vc-warning-bg: rgb(120 53 15 / 55%);
+      --vc-shadow: 0 28px 70px -10px rgb(0 0 0 / 55%), 0 2px 14px rgb(0 0 0 / 32%);
+      --vc-card-shadow: 0 4px 14px rgb(0 0 0 / 20%);
       color-scheme: dark;
     }
 
@@ -378,59 +378,46 @@ const videoCollectionLiquidUi = (() => {
     }
 
     .vc-shell .vc-launcher.el-button {
-      min-height: 48px;
+      min-height: 46px;
       padding: 0 18px;
       color: var(--vc-text);
-      background:
-        linear-gradient(132deg, rgb(255 255 255 / 58%), transparent 42%),
-        var(--vc-glass);
+      background: var(--vc-glass);
       border: 1px solid var(--vc-border);
       border-radius: 999px;
-      box-shadow: var(--vc-shadow), var(--vc-inner-highlight);
-      backdrop-filter: blur(28px) saturate(175%);
-      -webkit-backdrop-filter: blur(28px) saturate(175%);
+      box-shadow: var(--vc-shadow);
+      backdrop-filter: blur(28px) saturate(180%);
+      -webkit-backdrop-filter: blur(28px) saturate(180%);
       font-weight: 700;
       letter-spacing: .01em;
       overflow: hidden;
       cursor: grab;
       touch-action: none;
-      transition: transform 220ms ease, box-shadow 220ms ease, background 220ms ease;
+      transition: transform 120ms ease-out, box-shadow 220ms ease, background 220ms ease;
     }
 
     .vc-shell .vc-launcher.el-button:hover {
       color: var(--vc-text);
-      background:
-        linear-gradient(132deg, rgb(255 255 255 / 68%), transparent 42%),
-        var(--vc-glass-strong);
+      background: var(--vc-glass-strong);
       transform: translateY(-2px);
+    }
+
+    .vc-shell .vc-launcher.el-button:active {
+      transform: scale(.97);
     }
 
     .vc-panel {
       display: flex;
       flex-direction: column;
-      width: min(520px, calc(100vw - 40px));
+      width: min(460px, calc(100vw - 40px));
       max-height: min(720px, calc(100dvh - var(--vc-default-top) - var(--vc-floating-gap)));
       overflow: hidden;
       isolation: isolate;
-      background:
-        linear-gradient(145deg, rgb(255 255 255 / 45%), transparent 36%),
-        var(--vc-glass);
+      background: var(--vc-glass);
       border: 1px solid var(--vc-border);
-      border-radius: 28px;
-      box-shadow: var(--vc-shadow), var(--vc-inner-highlight);
-      backdrop-filter: blur(38px) saturate(185%);
-      -webkit-backdrop-filter: blur(38px) saturate(185%);
-    }
-
-    .vc-panel::before {
-      position: absolute;
-      z-index: -1;
-      inset: 0;
-      border: 1px solid rgb(255 255 255 / 20%);
-      border-radius: inherit;
-      box-shadow: inset 0 -1px 0 rgb(255 255 255 / 18%);
-      content: "";
-      pointer-events: none;
+      border-radius: 26px;
+      box-shadow: var(--vc-shadow);
+      backdrop-filter: blur(28px) saturate(180%);
+      -webkit-backdrop-filter: blur(28px) saturate(180%);
     }
 
     .vc-refraction {
@@ -440,19 +427,19 @@ const videoCollectionLiquidUi = (() => {
       width: 330px;
       aspect-ratio: 1;
       background:
-        radial-gradient(circle at 32% 36%, rgb(255 212 104 / 28%), transparent 36%),
-        radial-gradient(circle at 66% 58%, rgb(58 166 255 / 28%), transparent 46%);
-      filter: blur(14px);
-      opacity: .75;
+        radial-gradient(circle at 32% 36%, rgb(255 212 104 / 26%), transparent 38%),
+        radial-gradient(circle at 66% 58%, rgb(58 166 255 / 26%), transparent 46%);
+      filter: blur(18px);
+      opacity: .72;
       pointer-events: none;
       transform: rotate(-14deg);
     }
 
     .dark .vc-refraction {
       background:
-        radial-gradient(circle at 32% 36%, rgb(70 157 255 / 24%), transparent 38%),
-        radial-gradient(circle at 65% 58%, rgb(52 229 201 / 13%), transparent 46%);
-      opacity: .58;
+        radial-gradient(circle at 32% 36%, rgb(70 157 255 / 22%), transparent 38%),
+        radial-gradient(circle at 65% 58%, rgb(52 229 201 / 12%), transparent 46%);
+      opacity: .52;
     }
 
     .vc-header {
@@ -461,8 +448,7 @@ const videoCollectionLiquidUi = (() => {
       align-items: center;
       justify-content: space-between;
       gap: 14px;
-      padding: 15px 16px 13px 20px;
-      border-bottom: 1px solid var(--vc-border-soft);
+      padding: 15px 16px 10px 18px;
       cursor: grab;
       touch-action: none;
       user-select: none;
@@ -487,19 +473,19 @@ const videoCollectionLiquidUi = (() => {
     }
 
     .vc-title-mark {
-      width: 9px;
-      height: 30px;
-      background: linear-gradient(#79c4ff, var(--vc-accent));
+      width: 6px;
+      height: 20px;
+      background: linear-gradient(180deg, #60a5fa, var(--vc-accent));
       border-radius: 999px;
-      box-shadow: 0 0 18px rgb(8 124 255 / 38%);
+      box-shadow: 0 0 12px rgb(37 99 235 / 35%);
     }
 
     .vc-header h2 {
       margin: 0;
       overflow: hidden;
-      font-size: 17px;
-      font-weight: 760;
-      letter-spacing: -.02em;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -.01em;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
@@ -515,36 +501,43 @@ const videoCollectionLiquidUi = (() => {
       --el-segmented-item-selected-bg-color: var(--vc-glass-strong);
       --el-segmented-item-selected-color: var(--vc-text);
       --el-border-radius-base: 999px;
-      padding: 3px;
+      padding: 2.5px;
       border: 1px solid var(--vc-border-soft);
       border-radius: 999px;
-      box-shadow: var(--vc-inner-highlight);
     }
 
     .vc-shell .el-segmented__item {
-      min-width: 48px;
+      min-width: 46px;
       border-radius: 999px;
       font-size: 11px;
-      font-weight: 700;
+      font-weight: 600;
+      transition: transform 100ms ease-out;
+    }
+
+    .vc-shell .el-segmented__item:active {
+      transform: scale(.96);
     }
 
     .vc-shell .vc-close.el-button {
-      width: 32px;
-      height: 32px;
+      width: 30px;
+      height: 30px;
+      min-height: 30px;
+      padding: 0;
       color: var(--vc-muted);
-      background: var(--vc-control);
+      background: var(--vc-glass-strong);
       border: 1px solid var(--vc-border-soft);
-      font-size: 20px;
+      font-size: 18px;
       font-weight: 400;
     }
 
     .vc-panel-body {
       display: grid;
-      gap: 12px;
+      gap: 11px;
       min-height: 0;
-      padding: 14px 18px 18px;
+      padding: 8px 16px 16px;
       overflow: auto;
       overscroll-behavior: contain;
+      scrollbar-width: thin;
       scrollbar-color: var(--vc-border-soft) transparent;
     }
 
@@ -552,48 +545,47 @@ const videoCollectionLiquidUi = (() => {
     .vc-content-card {
       background: var(--vc-standard);
       border: 1px solid var(--vc-border-soft);
-      border-radius: 20px;
-      box-shadow: var(--vc-inner-highlight);
+      border-radius: 18px;
+      box-shadow: var(--vc-card-shadow);
     }
 
-    .vc-period-card { padding: 14px; }
+    .vc-period-card { padding: 12px 14px; }
 
     .vc-period-head {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
 
     .vc-section-label {
       display: block;
       margin-bottom: 2px;
       color: var(--vc-muted);
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: .08em;
-      text-transform: uppercase;
+      font-size: 11.5px;
+      font-weight: 600;
+      letter-spacing: .01em;
     }
 
     .vc-period-value {
       color: var(--vc-text);
-      font-size: 14px;
+      font-size: 13.5px;
       font-variant-numeric: tabular-nums;
-      font-weight: 720;
+      font-weight: 700;
     }
 
     .vc-shell .el-button {
       --el-button-text-color: var(--vc-text);
-      --el-button-bg-color: var(--vc-control);
+      --el-button-bg-color: var(--vc-glass-strong);
       --el-button-border-color: var(--vc-border-soft);
       --el-button-hover-text-color: var(--vc-text);
       --el-button-hover-bg-color: var(--vc-control-hover);
       --el-button-hover-border-color: var(--vc-border);
       min-height: 36px;
-      border-radius: 14px;
-      font-weight: 650;
-      transition: transform 180ms ease, background 180ms ease, opacity 180ms ease;
+      border-radius: 999px;
+      font-weight: 600;
+      transition: transform 100ms ease-out, background 160ms ease, opacity 160ms ease;
     }
 
     .vc-shell .el-button:not(.is-disabled):active { transform: scale(.97); }
@@ -601,11 +593,21 @@ const videoCollectionLiquidUi = (() => {
     .vc-shell .el-button--primary {
       --el-button-text-color: #fff;
       --el-button-bg-color: var(--vc-accent);
-      --el-button-border-color: rgb(255 255 255 / 26%);
+      --el-button-border-color: transparent;
       --el-button-hover-text-color: #fff;
       --el-button-hover-bg-color: var(--vc-accent-strong);
-      --el-button-hover-border-color: rgb(255 255 255 / 38%);
-      box-shadow: inset 0 1px 0 rgb(255 255 255 / 38%), 0 8px 20px rgb(8 124 255 / 24%);
+      --el-button-hover-border-color: transparent;
+      background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
+      box-shadow: 0 4px 12px rgb(37 99 235 / 26%);
+    }
+
+    .vc-shell .el-button--primary.is-disabled,
+    .vc-shell .el-button--primary.is-disabled:hover {
+      color: var(--vc-muted);
+      background: var(--vc-control);
+      border-color: var(--vc-border-soft);
+      box-shadow: none;
+      opacity: .85;
     }
 
     .vc-date-grid {
@@ -616,31 +618,33 @@ const videoCollectionLiquidUi = (() => {
 
     .vc-date-field {
       display: grid;
-      gap: 5px;
+      gap: 4px;
       min-width: 0;
       color: var(--vc-muted);
-      font-size: 12px;
-      font-weight: 650;
+      font-size: 11.5px;
+      font-weight: 600;
+      letter-spacing: .01em;
     }
 
     .vc-date-input {
       width: 100%;
       min-width: 0;
-      height: 38px;
+      height: 36px;
       padding: 0 10px;
       color: var(--vc-text);
       background: var(--vc-control);
       border: 1px solid var(--vc-border-soft);
-      border-radius: 13px;
-      box-shadow: var(--vc-inner-highlight);
+      border-radius: 12px;
       font: inherit;
+      font-size: 12.5px;
+      font-weight: 600;
       font-variant-numeric: tabular-nums;
       outline: none;
     }
 
     .vc-date-input:focus {
       border-color: var(--vc-accent);
-      box-shadow: 0 0 0 3px var(--vc-accent-soft), var(--vc-inner-highlight);
+      box-shadow: 0 0 0 3px var(--vc-accent-soft);
     }
 
     .vc-date-input:disabled { opacity: .56; }
@@ -687,17 +691,17 @@ const videoCollectionLiquidUi = (() => {
     .vc-workbook-card {
       display: grid;
       gap: 9px;
-      padding: 12px;
+      padding: 12px 14px;
       background: var(--vc-standard);
       border: 1px solid var(--vc-border-soft);
       border-radius: 18px;
-      box-shadow: var(--vc-inner-highlight);
+      box-shadow: var(--vc-card-shadow);
     }
 
     .vc-workbook-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 7px;
+      gap: 8px;
     }
 
     .vc-workbook-item {
@@ -706,18 +710,19 @@ const videoCollectionLiquidUi = (() => {
       align-items: start;
       gap: 9px;
       min-width: 0;
-      padding: 9px 10px;
+      padding: 9px 11px;
       background: var(--vc-control);
       border: 1px solid var(--vc-border-soft);
-      border-radius: 14px;
+      border-radius: 13px;
     }
 
     .vc-workbook-copy { display: grid; gap: 2px; min-width: 0; }
-    .vc-workbook-copy strong { font-size: 12px; font-weight: 740; }
+    .vc-workbook-copy strong { font-size: 12.5px; font-weight: 650; }
     .vc-workbook-copy small {
       color: var(--vc-muted);
       font-size: 11px;
       font-variant-numeric: tabular-nums;
+      letter-spacing: .01em;
       line-height: 1.4;
       overflow-wrap: anywhere;
     }
@@ -725,7 +730,8 @@ const videoCollectionLiquidUi = (() => {
     .vc-workbook-status {
       margin: 0;
       color: var(--vc-muted);
-      font-size: 12px;
+      font-size: 11.5px;
+      letter-spacing: .01em;
       overflow-wrap: anywhere;
     }
 
@@ -735,10 +741,21 @@ const videoCollectionLiquidUi = (() => {
       gap: 8px;
     }
 
+    .vc-actions .el-button {
+      flex: 1 1 auto;
+      margin-left: 0 !important;
+    }
+
     .vc-status {
       min-height: 0;
       margin: 0;
+      padding: 9px 12px;
       color: var(--vc-muted);
+      background: var(--vc-standard);
+      border: 1px solid var(--vc-border-soft);
+      border-radius: 13px;
+      font-size: 12px;
+      line-height: 1.45;
       overflow-wrap: anywhere;
     }
 
@@ -747,7 +764,7 @@ const videoCollectionLiquidUi = (() => {
     .vc-content-card {
       display: grid;
       gap: 10px;
-      padding: 13px;
+      padding: 12px 14px;
     }
 
     .vc-summary {
@@ -766,15 +783,17 @@ const videoCollectionLiquidUi = (() => {
       --el-tag-border-color: var(--vc-border-soft);
       --el-tag-text-color: var(--vc-muted);
       border-radius: 999px;
+      font-weight: 600;
+      letter-spacing: .01em;
     }
 
     .vc-count {
       margin: 0;
       color: var(--vc-text);
-      font-size: 15px;
+      font-size: 16px;
       font-variant-numeric: tabular-nums;
-      font-weight: 760;
-      letter-spacing: -.01em;
+      font-weight: 700;
+      letter-spacing: -.02em;
     }
 
     .vc-table-scroll {
@@ -855,6 +874,29 @@ const videoCollectionLiquidUi = (() => {
         animation-duration: .01ms !important;
         animation-iteration-count: 1 !important;
         transition-duration: .01ms !important;
+      }
+    }
+
+    @media (prefers-reduced-transparency: reduce) {
+      .vc-panel, .vc-shell .vc-launcher.el-button {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        background: var(--vc-glass-strong);
+      }
+    }
+
+    @media (prefers-contrast: more) {
+      .vc-shell {
+        --vc-glass: #f8fafc;
+        --vc-standard: #ffffff;
+        --vc-border: rgb(15 23 42 / 28%);
+        --vc-border-soft: rgb(15 23 42 / 24%);
+      }
+      .vc-shell.dark {
+        --vc-glass: #0b1120;
+        --vc-standard: #1e293b;
+        --vc-border: rgb(255 255 255 / 35%);
+        --vc-border-soft: rgb(255 255 255 / 28%);
       }
     }
   `;
