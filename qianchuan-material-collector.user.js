@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         千川素材请求采集
 // @namespace    VideoCollection
-// @version      1.6.7
+// @version      1.6.8
 // @description  采集千川素材与抖店自营视频，支持单页 CSV 与双页 Excel 汇总导出。
 // @updateURL    https://raw.githubusercontent.com/xiaomingxinggit/VideoCollection/main/qianchuan-material-collector.user.js
 // @downloadURL  https://raw.githubusercontent.com/xiaomingxinggit/VideoCollection/main/qianchuan-material-collector.user.js
@@ -2303,11 +2303,9 @@ const videoCollectionLiquidUi = (() => {
     else if (run?.phase === 'paused') status = run.error || '采集已暂停，进度已保留。';
     else if (!ready) status = '请分别打开推直播间和推商品，等待捕获列表请求。';
 
-    const scopeNote = differentScopes.length ? [
-      ...differentScopes.map((item) => `${modes[item.mode].label} 页面查询 ${periodText(item)}`),
-      `采集日期 ${periodText(run ?? selectedPeriod)}`,
-      '核对采集序号时，请将对应页面设为相同日期，并按展现从高到低排序。',
-    ].join('。') : '';
+    const scopeNote = differentScopes.length
+      ? differentScopes.map((item) => `${modes[item.mode].label}当前页面的日期是：${periodText(item)}`).join(' ')
+      : '';
 
     return {
       periodLabel: '统计周期',
@@ -2969,7 +2967,7 @@ const videoCollectionLiquidUi = (() => {
       workbookStatus: workbookState.message,
       startLabel: run ? (canResume(run) ? '继续采集' : '重新采集') : '开始采集',
       scopeNote: differentScope
-        ? `最近页面查询 ${periodText(template.sourcePeriod)}。采集日期 ${periodText(run ?? selectedPeriod)}。核对序号时，请将页面设为相同日期并按观看次数从高到低排序。`
+        ? `当前页面的日期是：${periodText(template.sourcePeriod)}`
         : '',
       status,
       progress: [{
