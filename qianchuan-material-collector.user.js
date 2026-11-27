@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         千川素材请求采集
 // @namespace    VideoCollection
-// @version      1.6.8
+// @version      1.6.9
 // @description  采集千川素材与抖店自营视频，支持单页 CSV 与双页 Excel 汇总导出。
 // @updateURL    https://raw.githubusercontent.com/xiaomingxinggit/VideoCollection/main/qianchuan-material-collector.user.js
 // @downloadURL  https://raw.githubusercontent.com/xiaomingxinggit/VideoCollection/main/qianchuan-material-collector.user.js
@@ -2301,7 +2301,6 @@ const videoCollectionLiquidUi = (() => {
     else if (running) status = run.pauseRequested ? '正在暂停' : '正在逐页采集，请保持页面打开。';
     else if (complete) status = run.storageError || '两类素材筛选完成，可以下载当前 CSV。';
     else if (run?.phase === 'paused') status = run.error || '采集已暂停，进度已保留。';
-    else if (!ready) status = '请分别打开推直播间和推商品，等待捕获列表请求。';
 
     const scopeNote = differentScopes.length
       ? differentScopes.map((item) => `${modes[item.mode].label}当前页面的日期是：${periodText(item)}`).join(' ')
